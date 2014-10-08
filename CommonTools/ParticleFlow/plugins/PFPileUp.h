@@ -18,41 +18,28 @@
 
 #include "CommonTools/ParticleFlow/interface/PFPileUpAlgo.h"
 
-/**\class PFPileUp
-\brief Identifies pile-up candidates from a collection of PFCandidates, and
-produces the corresponding collection of PileUpCandidates.
-
-\author Colin Bernet
-\date   february 2008
-\updated Florian Beaudette 30/03/2012
-
-*/
-
-
-
 
 class PFPileUp : public edm::stream::EDProducer<> {
+
  public:
 
-  typedef std::vector< edm::FwdPtr<reco::PFCandidate> >  PFCollection;
-  typedef edm::View<reco::PFCandidate>                   PFView;
-  typedef std::vector<reco::PFCandidate>                 PFCollectionByValue;
+  typedef std::vector<edm::FwdPtr<reco::PFCandidate> >  PFCollection; // pfCandidates vector inputs
+  typedef edm::View<reco::PFCandidate>                  PFView; // view from event
+  typedef std::vector<reco::PFCandidate>                PFCollectionByValue;
 
-  explicit PFPileUp(const edm::ParameterSet&);
+  explicit PFPileUp(const edm::ParameterSet&); // default constructor
 
   ~PFPileUp();
 
-  virtual void produce(edm::Event&, const edm::EventSetup&) override;
+  virtual void produce(edm::Event&, const edm::EventSetup&) override; // produce methdo
 
  private:
 
-  PFPileUpAlgo    pileUpAlgo_;
+  PFPileUpAlgo    pileUpAlgo_; // object to be called to apply the algorithm
 
   /// PFCandidates to be analyzed
   edm::EDGetTokenT<PFCollection>   tokenPFCandidates_;
-  /// fall-back token
-  edm::EDGetTokenT<PFView>   tokenPFCandidatesView_;
-
+  edm::EDGetTokenT<PFView>         tokenPFCandidatesView_;
   /// vertices
   edm::EDGetTokenT<reco::VertexCollection>   tokenVertices_;
 
@@ -64,6 +51,18 @@ class PFPileUp : public edm::stream::EDProducer<> {
 
   /// use the closest z vertex if a track is not in a vertex
   bool   checkClosestZVertex_;
+
+  edm::ParameterSet  softKillerParam_ ;
+  edm::ParameterSet  puppiParam_ ;
+  edm::ParameterSet  jetCleansingParam_ ;
+  edm::ParameterSet  constituentSubtractionParam_ ;
+
+  bool produceCHS_ ;
+  bool produceSoftKiller_ ;
+  bool producePuppi_ ;
+  bool produceJetCleansing_ ;
+  bool produceConstituentSubtraction_ ;
+
 
 };
 

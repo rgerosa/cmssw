@@ -6,7 +6,6 @@
 
 #include "FWCore/Framework/interface/ESHandle.h"
 
-// #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/Utilities/interface/Exception.h"
 #include "FWCore/Framework/interface/EventSetup.h"
 
@@ -15,110 +14,130 @@ using namespace std;
 using namespace edm;
 using namespace reco;
 
+// constructor from event parameter set
 PFPileUp::PFPileUp(const edm::ParameterSet& iConfig) {
 
-  tokenPFCandidates_
-    = consumes<PFCollection>(iConfig.getParameter<InputTag>("PFCandidates"));
-  tokenPFCandidatesView_
-    = mayConsume<PFView>(iConfig.getParameter<InputTag>("PFCandidates"));
+  tokenPFCandidates_      = consumes<PFCollection>(iConfig.getParameter<edm::InputTag>("PFCandidates")); // consumes of pfCandidates
+  tokenPFCandidatesView_  = mayConsume<PFView>(iConfig.getParameter<edm::InputTag>("PFCandidates"));
 
-  tokenVertices_
-    = consumes<VertexCollection>(iConfig.getParameter<InputTag>("Vertices"));
+  tokenVertices_ = consumes<VertexCollection>(iConfig.getParameter<edm::InputTag>("Vertices"));
 
-  enable_ = iConfig.getParameter<bool>("Enable");
+  enable_  = iConfig.exists("Enable") ? iConfig.getParameter<bool>("Enable") : true; 
+  verbose_ = iConfig.exists("verbose") ? iConfig.getUntrackedParameter<bool>("verbose") : true;
+  checkClosestZVertex_ = iConfig.exists("checkClosestZVertex") ? iConfig.getParameter<bool>("checkClosestZVertex") : true;
 
-  verbose_ =
-    iConfig.getUntrackedParameter<bool>("verbose",false);
-
-
-  if ( iConfig.exists("checkClosestZVertex") ) {
-    checkClosestZVertex_ = iConfig.getParameter<bool>("checkClosestZVertex");
-  } else {
-    checkClosestZVertex_ = false;
-  }
-
-  // Configure the algo
+  // Configure the algo  
   pileUpAlgo_.setVerbose(verbose_);
   pileUpAlgo_.setCheckClosestZVertex(checkClosestZVertex_);
 
-  //produces<reco::PFCandidateCollection>();
-  produces< PFCollection > ();
-  // produces< PFCollectionByValue > ();
+  softKillerParam_   = iConfig.getParameter<edm::ParameterSet>("softKillerParam");
+  puppiParam_        = iConfig.getParameter<edm::ParameterSet>("puppiParam");
+  jetCleansingParam_ = iConfig.getParameter<edm::ParameterSet>("jetCleansingParam");
+  constituentSubtractionParam_ = iConfig.getParameter<edm::ParameterSet>("constituentSubtractionParam");
+
+  produceCHS_                    = iConfig.exists("produceCHS")                    ? iConfig.getParameter<bool>("produceCHS") : true;
+  produceSoftKiller_             = iConfig.exists("produceSoftKiller")             ? iConfig.getParameter<bool>("produceSoftKiller") : true;
+  producePuppi_                  = iConfig.exists("producePuppi")                  ? iConfig.getParameter<bool>("producePuppi") : true;
+  produceJetCleansing_           = iConfig.exists("produceJetCleansing")           ? iConfig.getParameter<bool>("produceJetCleansing") : true;
+  produceConstituentSubtraction_ = iConfig.exists("produceConstituentSubtraction") ? iConfig.getParameter<bool>("produceConstituentSubtraction") : true;
+
+  if(produceCHS_)          produces< PFCollection > ("pfCandidatePU"); // produce output CHS
+  if(produceCHS_)          produces< PFCollection > ("pfCandidatePV"); // produce output CHS
+  if(produceSoftKiller_)   produces< PFCollection > ("pfCandidateSoftKiller"); // produce output soft killer
+  if(producePuppi_)        produces< PFCollection > ("pfCandidatePuppi"); // produce output puppi
+  if(produceJetCleansing_) produces< PFCollection > ("pfCandidateJetCleansing"); // produce output jet cleansing
+  if(produceConstituentSubtraction_) produces< PFCollection > ("pfCandidateConstSubtraction"); // produce output constituent subtraction
+
 }
 
 
 
-PFPileUp::~PFPileUp() { }
+PFPileUp::~PFPileUp(){} // deconstructor
 
+// basic producer from event and setup
+void PFPileUp::produce(edm::Event& iEvent, const edm::EventSetup & iSetup) {
 
-
-void PFPileUp::produce(Event& iEvent,
-			  const EventSetup& iSetup) {
-
-//   LogDebug("PFPileUp")<<"START event: "<<iEvent.id().event()
-// 			 <<" in run "<<iEvent.id().run()<<endl;
-
-
-  // get PFCandidates
-
-  auto_ptr< PFCollection >
-    pOutput( new PFCollection );
-
-  auto_ptr< PFCollectionByValue >
-    pOutputByValue ( new PFCollectionByValue );
+  std::auto_ptr< PFCollection > outputCHSCollectionPV ( new PFCollection );
+  std::auto_ptr< PFCollection > outputCHSCollectionPU ( new PFCollection );
+  std::auto_ptr< PFCollection > outputSoftKillerCollection ( new PFCollection );
+  std::auto_ptr< PFCollection > outputPuppiCollection ( new PFCollection );
+  std::auto_ptr< PFCollection > outputJetCleansingCollection ( new PFCollection );
+  std::auto_ptr< PFCollection > outputConstituentSubtractionCollection ( new PFCollection );
 
   if(enable_) {
-
-
     // get vertices
-    Handle<VertexCollection> vertices;
-    iEvent.getByToken( tokenVertices_, vertices);
-
+    edm::Handle<VertexCollection> vertices;
+    iEvent.getByToken(tokenVertices_,vertices);
     // get PF Candidates
-    Handle<PFCollection> pfCandidates;
-    PFCollection const * pfCandidatesRef = 0;
+    edm::Handle<PFCollection> pfCandidates;
+    const PFCollection* pfCandidatesRef = 0;
     PFCollection usedIfNoFwdPtrs;
-    bool getFromFwdPtr = iEvent.getByToken( tokenPFCandidates_, pfCandidates);
+    bool getFromFwdPtr = iEvent.getByToken(tokenPFCandidates_, pfCandidates);
     if ( getFromFwdPtr ) {
       pfCandidatesRef = pfCandidates.product();
     }
-    // Maintain backwards-compatibility.
-    // If there is no vector of FwdPtr<PFCandidate> found, then
-    // make a dummy vector<FwdPtr<PFCandidate> > for the PFPileupAlgo,
-    // set the pointer "pfCandidatesRef" to point to it, and
-    // then we can pass it to the PFPileupAlgo.
     else {
-      Handle<PFView> pfView;
-      bool getFromView = iEvent.getByToken( tokenPFCandidatesView_, pfView );
-      if ( ! getFromView ) {
+     // Maintain backwards-compatibility.
+     // If there is no vector of FwdPtr<PFCandidate> found, then
+     // make a dummy vector<FwdPtr<PFCandidate> > for the PFPileupAlgo,
+     // set the pointer "pfCandidatesRef" to point to it, and
+     // then we can pass it to the PFPileupAlgo.
+     edm::Handle<PFView> pfView;
+     bool getFromView = iEvent.getByToken(tokenPFCandidatesView_, pfView);
+     if ( ! getFromView ) {
 	throw cms::Exception("PFPileUp is misconfigured. This needs to be either vector<FwdPtr<PFCandidate> >, or View<PFCandidate>");
-      }
-      for ( edm::View<reco::PFCandidate>::const_iterator viewBegin = pfView->begin(),
-	      viewEnd = pfView->end(), iview = viewBegin;
-	    iview != viewEnd; ++iview ) {
-	usedIfNoFwdPtrs.push_back( edm::FwdPtr<reco::PFCandidate>( pfView->ptrAt(iview-viewBegin), pfView->ptrAt(iview-viewBegin)  ) );
-      }
-      pfCandidatesRef = &usedIfNoFwdPtrs;
+     }
+     for (edm::View<reco::PFCandidate>::const_iterator viewBegin = pfView->begin(), viewEnd = pfView->end(), iview = viewBegin; iview != viewEnd; ++iview ) {
+	usedIfNoFwdPtrs.push_back(edm::FwdPtr<reco::PFCandidate>(pfView->ptrAt(iview-viewBegin), pfView->ptrAt(iview-viewBegin)));
+     }
+     pfCandidatesRef = &usedIfNoFwdPtrs;
     }
 
-    if ( pfCandidatesRef == 0 ) {
+    if(pfCandidatesRef == 0) {
       throw cms::Exception("Something went dreadfully wrong with PFPileUp. pfCandidatesRef should never be zero, so this is a logic error.");
     }
 
+    if(produceCHS_){ // if you want to run CHS
+      pileUpAlgo_.processChargedHadronSubtraction(*pfCandidatesRef,*vertices.product()); // run CHS alone
+      outputCHSCollectionPV->insert(outputCHSCollectionPV->end(),pileUpAlgo_.getPFCandidatesFromVtx().begin(),pileUpAlgo_.getPFCandidatesFromVtx().end()); 
+      outputCHSCollectionPU->insert(outputCHSCollectionPU->end(),pileUpAlgo_.getPFCandidatesFromPU().begin(),pileUpAlgo_.getPFCandidatesFromPU().end()); 
+    }
 
+    if(produceSoftKiller_){ // if you want to run softkiller
+      pileUpAlgo_.processSoftKiller(*pfCandidatesRef,*vertices,softKillerParam_); // run CHS alone
+      outputSoftKillerCollection->insert(outputSoftKillerCollection->end(),pileUpAlgo_.getSoftKillerPFCandidates().begin(),pileUpAlgo_.getSoftKillerPFCandidates().end()); 
+    }
 
-    pileUpAlgo_.process(*pfCandidatesRef,*vertices);
-    pOutput->insert(pOutput->end(),pileUpAlgo_.getPFCandidatesFromPU().begin(),pileUpAlgo_.getPFCandidatesFromPU().end());
+    if(producePuppi_){ // if you want to run puppi
+      pileUpAlgo_.processPuppi(*pfCandidatesRef,*vertices,puppiParam_); // run CHS alone
+      outputPuppiCollection->insert(outputPuppiCollection->end(),pileUpAlgo_.getPuppiPFCandidates().begin(),pileUpAlgo_.getPuppiPFCandidates().end()); 
+    }
 
-    // for ( PFCollection::const_iterator byValueBegin = pileUpAlgo_.getPFCandidatesFromPU().begin(),
-    // 	    byValueEnd = pileUpAlgo_.getPFCandidatesFromPU().end(), ibyValue = byValueBegin;
-    // 	  ibyValue != byValueEnd; ++ibyValue ) {
-    //   pOutputByValue->push_back( **ibyValue );
-    // }
+    if(produceJetCleansing_){ // if you want to run jet cleansing
+      pileUpAlgo_.processJetCleansing(*pfCandidatesRef,*vertices,jetCleansingParam_); // run CHS alone
+      outputJetCleansingCollection->insert(outputJetCleansingCollection->end(),pileUpAlgo_.getJetCleansingPFCandidates().begin(),pileUpAlgo_.getJetCleansingPFCandidates().end()); 
+    }
+
+    if(produceConstituentSubtraction_){ // if you want to run constituent subtraction
+      pileUpAlgo_.processConstituentSubtraction(*pfCandidatesRef,*vertices,constituentSubtractionParam_); // run CHS alone
+      outputConstituentSubtractionCollection->insert(outputConstituentSubtractionCollection->end(),pileUpAlgo_.getConstituentSubtractionPFCandidates().begin(),pileUpAlgo_.getConstituentSubtractionPFCandidates().end()); 
+    }
 
   } // end if enabled
+
   // outsize of the loop to fill the collection anyway even when disabled
-  iEvent.put( pOutput );
-  // iEvent.put( pOutputByValue );
+  if(produceCHS_){
+    iEvent.put(outputCHSCollectionPV,"pfCandidatePV");
+    iEvent.put(outputCHSCollectionPU,"pfCandidatePU");
+  }
+  
+  if(produceSoftKiller_) iEvent.put(outputSoftKillerCollection,"pfCandidateSoftKiller");
+
+  if(producePuppi_) iEvent.put(outputPuppiCollection,"pfCandidatePuppi");
+
+  if(produceJetCleansing_) iEvent.put(outputJetCleansingCollection,"pfCandidateJetCleansing");
+
+  if(produceConstituentSubtraction_) iEvent.put(outputConstituentSubtractionCollection,"pfCandidateConstSubtraction");
+  
 }
 
