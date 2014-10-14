@@ -19,7 +19,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.source = cms.Source ("PoolSource");
 
 if options.isMiniAOD :
- process.source.fileNames = cms.untracked.vstring('root://xrootd.unl.edu//store/mc/Spring14miniaod/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU40bx25_POSTLS170_V5-v2/00000/02C7C084-B726-E411-BEB4-002481E0D2EA.root') ;
+ process.source.fileNames = cms.untracked.vstring('root://xrootd.unl.edu//store/mc/Spring14miniaod/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/MINIAODSIM/PU40bx25_POSTLS170_V7-v2/00000/00800BE3-E826-E411-AD01-20CF3019DEE9.root') ;
 else:
  process.source.fileNames = cms.untracked.vstring('root://xrootd.unl.edu//store/mc/Spring14dr/TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola/AODSIM/PU40bx25_POSTLS170_V5-v1/00000/000A6D7D-EB11-E411-9EEC-002590DB9152.root') ;
 

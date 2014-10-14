@@ -164,10 +164,18 @@ namespace DataFormats_PatCandidates {
   edm::Ptr<pat::Conversion> ptr_Conversion;
   edm::Ptr<pat::Muon> ptr_Muon;
   edm::Ptr<pat::Tau> ptr_Tau;
+  edm::Ptr<pat::PackedCandidate> ptr_pc;
+  std::vector<edm::Ptr<pat::PackedCandidate> > v_ptr_pc;
+  edm::Wrapper<std::vector<edm::Ptr<pat::PackedCandidate> > > w_v_ptr_pc;
 
   edm::Wrapper<edm::Association<pat::PackedCandidateCollection > > w_asso_pc;
   edm::Wrapper<edm::Association<reco::PFCandidateCollection > >    w_asso_pfc;
   edm::Wrapper<edm::Association<std::vector<pat::PackedGenParticle> > > asso_pgp;
+
+  edm::FwdPtr<pat::PackedCandidate> fwdptr_pc;
+  edm::FwdPtr<pat::PackedCandidateCollection> fwdptr_w_pc;
+  std::vector<edm::FwdPtr<pat::PackedCandidate> > v_fwdptr_pc;
+  edm::Wrapper<std::vector<edm::FwdPtr<pat::PackedCandidate> > > w_fwptr_pc;
 
 
   };

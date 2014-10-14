@@ -474,9 +474,12 @@ template <typename T>
 int PFPileUpAlgo<T>::chargedHadronVertex( const reco::VertexCollection& vertices, const pat::PackedCandidate & pfcand) const {
 
   if(&(*(pfcand.vertexRef())) == 0) return -1 ;  
-    
-  int pVtxId = (pfcand.fromPV() != (pat::PackedCandidate::PVLoose || pat::PackedCandidate::PVTight || pat::PackedCandidate::PVUsedInFit));
-  if(pVtxId >=0) return pVtxId;
+   
+  int pVtxId = pfcand.fromPV();
+  if((pVtxId == 3 or pVtxId == 2) and pfcand.charge() == 0) return -1;
+  if((pVtxId == 3 or pVtxId == 2) and pfcand.charge() != 0) return 0;
+  if((pVtxId == 1 or pVtxId == 0) and pfcand.charge() != 0) return 1;
+  if((pVtxId == 1 or pVtxId == 0) and pfcand.charge() == 0) return -1;
 
   // no vertex found with this track. 
   unsigned int index = 0;

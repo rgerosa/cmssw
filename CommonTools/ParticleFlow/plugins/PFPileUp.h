@@ -11,21 +11,28 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
 #include "FWCore/Framework/interface/Event.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
+#include "FWCore/Framework/interface/ESHandle.h"
+#include "FWCore/Utilities/interface/Exception.h"
+#include "FWCore/Framework/interface/EventSetup.h"
 
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidateFwd.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
+#include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
+#include "DataFormats/VertexReco/interface/Vertex.h"
+#include "DataFormats/PatCandidates/interface/PackedCandidate.h"
+#include "DataFormats/ParticleFlowCandidate/interface/PileUpPFCandidate.h"
+#include "DataFormats/ParticleFlowCandidate/interface/PileUpPFCandidateFwd.h"
 
 #include "CommonTools/ParticleFlow/interface/PFPileUpAlgo.h"
+#include "CommonTools/ParticleFlow/src/PFPileUpAlgo.cc"
 
-
-class PFPileUp : public edm::stream::EDProducer<> {
+template <class T>
+class PFPileUp : public edm::EDProducer {
 
  public:
 
-  typedef std::vector<edm::FwdPtr<reco::PFCandidate> >  PFCollection; // pfCandidates vector inputs
-  typedef edm::View<reco::PFCandidate>                  PFView; // view from event
-  typedef std::vector<reco::PFCandidate>                PFCollectionByValue;
+  typedef std::vector<edm::FwdPtr<T> >  PFCollection;  // pfCandidates vector inputs --> PFCandidate or Packed ones from SealModule
+  typedef edm::View<T>    PFView;        // View from event
 
   explicit PFPileUp(const edm::ParameterSet&); // default constructor
 
@@ -35,13 +42,12 @@ class PFPileUp : public edm::stream::EDProducer<> {
 
  private:
 
-  PFPileUpAlgo    pileUpAlgo_; // object to be called to apply the algorithm
+  PFPileUpAlgo<T>    pileUpAlgo_; // object to be called to apply the algorithm
 
   /// PFCandidates to be analyzed
-  edm::EDGetTokenT<PFCollection>   tokenPFCandidates_;
-  edm::EDGetTokenT<PFView>         tokenPFCandidatesView_;
-  /// vertices
-  edm::EDGetTokenT<reco::VertexCollection>   tokenVertices_;
+  edm::EDGetTokenT<PFCollection>           tokenPFCandidates_;
+  edm::EDGetTokenT<PFView>                 tokenPFCandidatesView_;
+  edm::EDGetTokenT<reco::VertexCollection> tokenVertices_;
 
   /// enable PFPileUp selection
   bool   enable_;
@@ -61,9 +67,7 @@ class PFPileUp : public edm::stream::EDProducer<> {
   bool produceSoftKiller_ ;
   bool producePuppi_ ;
   bool produceJetCleansing_ ;
-  bool produceConstituentSubtraction_ ;
-
-
-};
+  bool produceConstituentSubtraction_ ;}
+;
 
 #endif
