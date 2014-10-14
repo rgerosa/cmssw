@@ -168,4 +168,32 @@ PFPileUpPackedCandidate = cms.EDProducer("PFPileUpPackedCandidate",
 
    verbose = cms.untracked.bool(False), ## verbosity
 )
+
+PFPileUpPackedCandidate.puppiParam.algos.insert(False,
+ cms.PSet( etaMin = cms.untracked.double(3.0),
+           etaMax = cms.untracked.double(10.0),
+           ptMin = cms.untracked.double(0.0),
+           MinNeutralPt = cms.untracked.double(1.5),
+           MinNeutralPtSlope = cms.untracked.double(0.005),
+           puppiAlgo = puppiForward)
+)
+
+PFPileUpPackedCandidate.puppiParam.algos.insert(False,
+       cms.PSet(etaMin = cms.untracked.double(2.5),
+          etaMax = cms.untracked.double(3.0),
+          ptMin = cms.untracked.double(0.0),
+          MinNeutralPt = cms.untracked.double(1.0),
+          MinNeutralPtSlope = cms.untracked.double(0.005),
+          puppiAlgo = puppiForward),
+)
+
+PFPileUpPackedCandidate.puppiParam.algos.insert(False,
+ ## central region inside tracker acceptance
+ cms.PSet( etaMin = cms.untracked.double(0.),
+           etaMax = cms.untracked.double(2.5),
+           ptMin = cms.untracked.double(0.), ## all pfCandidates are taken into account
+           MinNeutralPt = cms.untracked.double(0.2), ## only neutrals with pT > 0.2 GeV
+           MinNeutralPtSlope = cms.untracked.double(0.02),
+           puppiAlgo = puppiCentral),
+)
  
