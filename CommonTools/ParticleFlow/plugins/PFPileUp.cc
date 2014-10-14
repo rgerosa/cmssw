@@ -1,24 +1,15 @@
 #include "CommonTools/ParticleFlow/plugins/PFPileUp.h"
 
-#include "DataFormats/ParticleFlowCandidate/interface/PileUpPFCandidate.h"
-#include "DataFormats/ParticleFlowCandidate/interface/PileUpPFCandidateFwd.h"
-#include "DataFormats/VertexReco/interface/Vertex.h"
-
-#include "FWCore/Framework/interface/ESHandle.h"
-
-#include "FWCore/Utilities/interface/Exception.h"
-#include "FWCore/Framework/interface/EventSetup.h"
-
-
 using namespace std;
 using namespace edm;
 using namespace reco;
 
 // constructor from event parameter set
-PFPileUp::PFPileUp(const edm::ParameterSet& iConfig) {
+template< class T >
+PFPileUp<T>::PFPileUp(const edm::ParameterSet& iConfig) {
 
-  tokenPFCandidates_      = consumes<PFCollection>(iConfig.getParameter<edm::InputTag>("PFCandidates")); // consumes of pfCandidates
-  tokenPFCandidatesView_  = mayConsume<PFView>(iConfig.getParameter<edm::InputTag>("PFCandidates"));
+  tokenPFCandidates_      = consumes<PFCollection> (iConfig.getParameter<edm::InputTag>("PFCandidates")); // consumes of pfCandidates
+  tokenPFCandidatesView_  = mayConsume<PFView>     (iConfig.getParameter<edm::InputTag>("PFCandidates"));
 
   tokenVertices_ = consumes<VertexCollection>(iConfig.getParameter<edm::InputTag>("Vertices"));
 
@@ -51,11 +42,12 @@ PFPileUp::PFPileUp(const edm::ParameterSet& iConfig) {
 }
 
 
-
-PFPileUp::~PFPileUp(){} // deconstructor
+template< class T >
+PFPileUp<T>::~PFPileUp(){} // deconstructor
 
 // basic producer from event and setup
-void PFPileUp::produce(edm::Event& iEvent, const edm::EventSetup & iSetup) {
+template< class T >
+void PFPileUp<T>::produce(edm::Event& iEvent, const edm::EventSetup & iSetup) {
 
   std::auto_ptr< PFCollection > outputCHSCollectionPV ( new PFCollection );
   std::auto_ptr< PFCollection > outputCHSCollectionPU ( new PFCollection );
@@ -65,34 +57,29 @@ void PFPileUp::produce(edm::Event& iEvent, const edm::EventSetup & iSetup) {
   std::auto_ptr< PFCollection > outputConstituentSubtractionCollection ( new PFCollection );
 
   if(enable_) {
+
     // get vertices
     edm::Handle<VertexCollection> vertices;
     iEvent.getByToken(tokenVertices_,vertices);
-    // get PF Candidates
+    // try as they are miniAOD
     edm::Handle<PFCollection> pfCandidates;
     const PFCollection* pfCandidatesRef = 0;
-    PFCollection usedIfNoFwdPtrs;
-    bool getFromFwdPtr = iEvent.getByToken(tokenPFCandidates_, pfCandidates);
-    if ( getFromFwdPtr ) {
-      pfCandidatesRef = pfCandidates.product();
+    PFCollection useNoFwdPtrs;
+
+    bool getFromPackedFwdPtr = iEvent.getByToken(tokenPFCandidates_, pfCandidates);
+    if ( getFromPackedFwdPtr ) { pfCandidatesRef = pfCandidates.product();
     }
     else {
-     // Maintain backwards-compatibility.
-     // If there is no vector of FwdPtr<PFCandidate> found, then
-     // make a dummy vector<FwdPtr<PFCandidate> > for the PFPileupAlgo,
-     // set the pointer "pfCandidatesRef" to point to it, and
-     // then we can pass it to the PFPileupAlgo.
-     edm::Handle<PFView> pfView;
-     bool getFromView = iEvent.getByToken(tokenPFCandidatesView_, pfView);
-     if ( ! getFromView ) {
-	throw cms::Exception("PFPileUp is misconfigured. This needs to be either vector<FwdPtr<PFCandidate> >, or View<PFCandidate>");
-     }
-     for (edm::View<reco::PFCandidate>::const_iterator viewBegin = pfView->begin(), viewEnd = pfView->end(), iview = viewBegin; iview != viewEnd; ++iview ) {
-	usedIfNoFwdPtrs.push_back(edm::FwdPtr<reco::PFCandidate>(pfView->ptrAt(iview-viewBegin), pfView->ptrAt(iview-viewBegin)));
-     }
-     pfCandidatesRef = &usedIfNoFwdPtrs;
+       edm::Handle<PFView> pfView;
+       bool getFromPFView = iEvent.getByToken(tokenPFCandidatesView_, pfView);       
+       if(getFromPFView){ 
+         for (typename edm::View<T>::const_iterator viewBegin = pfView->begin(), viewEnd = pfView->end(), iview = viewBegin; iview != viewEnd; ++iview ) {            
+	   useNoFwdPtrs.push_back(edm::FwdPtr<T>(pfView->ptrAt(iview-viewBegin), pfView->ptrAt(iview-viewBegin)));
+	 }
+       pfCandidatesRef = &useNoFwdPtrs;
+       }
     }
-
+    
     if(pfCandidatesRef == 0) {
       throw cms::Exception("Something went dreadfully wrong with PFPileUp. pfCandidatesRef should never be zero, so this is a logic error.");
     }
@@ -108,11 +95,6 @@ void PFPileUp::produce(edm::Event& iEvent, const edm::EventSetup & iSetup) {
       outputSoftKillerCollection->insert(outputSoftKillerCollection->end(),pileUpAlgo_.getSoftKillerPFCandidates().begin(),pileUpAlgo_.getSoftKillerPFCandidates().end()); 
     }
 
-    if(producePuppi_){ // if you want to run puppi
-      pileUpAlgo_.processPuppi(*pfCandidatesRef,*vertices,puppiParam_); // run CHS alone
-      outputPuppiCollection->insert(outputPuppiCollection->end(),pileUpAlgo_.getPuppiPFCandidates().begin(),pileUpAlgo_.getPuppiPFCandidates().end()); 
-    }
-
     if(produceJetCleansing_){ // if you want to run jet cleansing
       pileUpAlgo_.processJetCleansing(*pfCandidatesRef,*vertices,jetCleansingParam_); // run CHS alone
       outputJetCleansingCollection->insert(outputJetCleansingCollection->end(),pileUpAlgo_.getJetCleansingPFCandidates().begin(),pileUpAlgo_.getJetCleansingPFCandidates().end()); 
@@ -122,6 +104,12 @@ void PFPileUp::produce(edm::Event& iEvent, const edm::EventSetup & iSetup) {
       pileUpAlgo_.processConstituentSubtraction(*pfCandidatesRef,*vertices,constituentSubtractionParam_); // run CHS alone
       outputConstituentSubtractionCollection->insert(outputConstituentSubtractionCollection->end(),pileUpAlgo_.getConstituentSubtractionPFCandidates().begin(),pileUpAlgo_.getConstituentSubtractionPFCandidates().end()); 
     }
+
+    if(producePuppi_){ // if you want to run puppi
+      pileUpAlgo_.processPuppi(*pfCandidatesRef,*vertices,puppiParam_); // run CHS alone
+      outputPuppiCollection->insert(outputPuppiCollection->end(),pileUpAlgo_.getPuppiPFCandidates().begin(),pileUpAlgo_.getPuppiPFCandidates().end()); 
+    }
+
 
   } // end if enabled
 
@@ -138,6 +126,6 @@ void PFPileUp::produce(edm::Event& iEvent, const edm::EventSetup & iSetup) {
   if(produceJetCleansing_) iEvent.put(outputJetCleansingCollection,"pfCandidateJetCleansing");
 
   if(produceConstituentSubtraction_) iEvent.put(outputConstituentSubtractionCollection,"pfCandidateConstSubtraction");
-  
+
 }
 
