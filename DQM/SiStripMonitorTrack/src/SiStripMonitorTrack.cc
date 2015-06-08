@@ -26,7 +26,7 @@ SiStripMonitorTrack::SiStripMonitorTrack(const edm::ParameterSet& conf):
   conf_(conf),
   tracksCollection_in_EventTree(true),
   firstEvent(-1),
-  genTriggerEventFlag_(new GenericTriggerEventFlag(conf, consumesCollector()))
+  genTriggerEventFlag_(new GenericTriggerEventFlag(conf, consumesCollector(), *this))
 {
   Cluster_src_   = conf.getParameter<edm::InputTag>("Cluster_src");
   Mod_On_        = conf.getParameter<bool>("Mod_On");
@@ -576,7 +576,7 @@ MonitorElement* SiStripMonitorTrack::bookMETrend(DQMStore::IBooker & ibooker , c
 					   ParametersTrend.getParameter<double>("xmin"),
 					   ParametersTrend.getParameter<double>("xmax"),
 					   0 , 0 , "" );
-  if (me->kind() == MonitorElement::DQM_KIND_TPROFILE) me->getTH1()->SetBit(TH1::kCanRebin);
+  if (me->kind() == MonitorElement::DQM_KIND_TPROFILE) me->getTH1()->SetCanExtend(TH1::kAllAxes);
 
   if(!me) return me;
   me->setAxisTitle("Lumisection",1);

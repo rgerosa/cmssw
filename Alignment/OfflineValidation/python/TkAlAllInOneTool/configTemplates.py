@@ -44,7 +44,7 @@ source /afs/cern.ch/cms/caf/setup.sh
 cd .oO[CMSSW_BASE]Oo./src
 export SCRAM_ARCH=.oO[SCRAM_ARCH]Oo.
 eval `scramv1 ru -sh`
-rfmkdir -p .oO[datadir]Oo. &>! /dev/null
+#rfmkdir -p .oO[datadir]Oo. &>! /dev/null
 
 #remove possible result file from previous runs
 previous_results=$(cmsLs -l /store/caf/user/$USER/.oO[eosdir]Oo. | awk '{print $5}')
@@ -245,7 +245,7 @@ void TkAlExtendedOfflineValidation()
 {
   // load framework lite just to find the CMSSW libs...
   gSystem->Load("libFWCoreFWLite");
-  AutoLibraryLoader::enable();
+  FWLiteEnabler::enable();
   //compile the makro
   gROOT->ProcessLine(".L .oO[CMSSW_BASE]Oo./src/Alignment/OfflineValidation/macros/PlotAlignmentValidation.C++");
   // gROOT->ProcessLine(".L ./PlotAlignmentValidation.C++");
