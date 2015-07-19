@@ -27,9 +27,9 @@ public:
 	typedef std::vector<LorentzVector> LorentzVectorCollection;
 	typedef reco::VertexCollection VertexCollection;
 	typedef edm::View<reco::Candidate> CandidateView;
-	typedef std::vector< reco::PFCandidate >               PFInputCollection;
-	typedef std::vector< reco::PFCandidate >  PFOutputCollection;
-	typedef edm::View<reco::PFCandidate>                   PFView;
+	typedef std::vector<reco::PFCandidate> PFOutputCollection;
+	typedef std::vector<pat::PackedCandidate> PackedOutputCollection;
+	typedef edm::View<reco::PFCandidate>   PFView;
 
 private:
 	virtual void beginJob() ;
@@ -46,12 +46,14 @@ private:
 	std::string     fPuppiName;
 	std::string     fPFName;	
 	std::string     fPVName;
-	bool 			fPuppiDiagnostics;
-	bool 			fPuppiForLeptons;
+	bool 		fPuppiDiagnostics;
+	bool 		fPuppiForLeptons;
 	bool            fUseDZ;
+	bool            fProducePackedCollection;
 	float           fDZCut;
 	std::unique_ptr<PuppiContainer> fPuppiContainer;
 	std::vector<RecoObj> fRecoObjCollection;
-        std::auto_ptr< PFOutputCollection >          fPuppiCandidates;
+        std::auto_ptr< PFOutputCollection >          fPuppiPFCandidates;
+        std::auto_ptr< PackedOutputCollection >      fPuppiPackedCandidates;
 };
 #endif

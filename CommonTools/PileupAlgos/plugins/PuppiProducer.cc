@@ -28,24 +28,30 @@
 
 
 // ------------------------------------------------------------------------------------------
+
 PuppiProducer::PuppiProducer(const edm::ParameterSet& iConfig) {
   fPuppiDiagnostics = iConfig.getParameter<bool>("puppiDiagnostics");
   fPuppiForLeptons = iConfig.getParameter<bool>("puppiForLeptons");
   fUseDZ     = iConfig.getParameter<bool>("UseDeltaZCut");
   fDZCut     = iConfig.getParameter<double>("DeltaZCut");
   fPuppiContainer = std::unique_ptr<PuppiContainer> ( new PuppiContainer(iConfig) );
-
   tokenPFCandidates_
     = consumes<CandidateView>(iConfig.getParameter<edm::InputTag>("candName"));
   tokenVertices_
     = consumes<VertexCollection>(iConfig.getParameter<edm::InputTag>("vertexName"));
- 
-
+  if(iConfig.existsAs<bool>("producePackedCollection"))
+    fProducePackedCollection = iConfig.getParameter<bool>("producePackedCollection");
+  else
+    fProducePackedCollection = false;
   produces<edm::ValueMap<float> > ();
   produces<edm::ValueMap<LorentzVector> > ();
-  produces< edm::ValueMap<reco::CandidatePtr> >(); 
-  
-  produces<PFOutputCollection>();
+  produces<edm::ValueMap<reco::CandidatePtr> >(); 
+
+  if(!fProducePackedCollection)
+    produces<PFOutputCollection>();
+  else
+    produces<PackedOutputCollection>();
+    
 
   if (fPuppiDiagnostics){
     produces<double> ("PuppiNAlgos");
@@ -56,9 +62,11 @@ PuppiProducer::PuppiProducer(const edm::ParameterSet& iConfig) {
   }
 }
 // ------------------------------------------------------------------------------------------
+
 PuppiProducer::~PuppiProducer(){
 }
 // ------------------------------------------------------------------------------------------
+
 void PuppiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
   // Get PFCandidate Collection
@@ -95,7 +103,6 @@ void PuppiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     bool lFirst = true;
     const pat::PackedCandidate *lPack = dynamic_cast<const pat::PackedCandidate*>(&(*itPF));
     if(lPack == 0 ) {
-
       const reco::PFCandidate *pPF = dynamic_cast<const reco::PFCandidate*>(&(*itPF));
       double curdz = 9999;
       int closestVtxForUnassociateds = -9999;
@@ -196,34 +203,55 @@ void PuppiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   // to search the "puppi" particles to find a match for each input. If none is found,
   // the input is set to have a four-vector of 0,0,0,0
   const std::vector<fastjet::PseudoJet> lCandidates = fPuppiContainer->puppiParticles();
-  fPuppiCandidates.reset( new PFOutputCollection );
+
+  if(!fProducePackedCollection)
+    fPuppiPFCandidates.reset( new PFOutputCollection );
+  else
+    fPuppiPackedCandidates.reset( new PackedOutputCollection );
+
   std::auto_ptr<edm::ValueMap<LorentzVector> > p4PupOut(new edm::ValueMap<LorentzVector>());
   LorentzVectorCollection puppiP4s;
   std::vector<reco::CandidatePtr> values(hPFProduct->size());
   //std::vector<int> values(hPFProduct->size());
-  
-  for ( auto i0 = hPFProduct->begin(),
+  int iCand = 0;
+  for ( auto i0   = hPFProduct->begin(),
 	  i0begin = hPFProduct->begin(),
-	  i0end = hPFProduct->end(); i0 != i0end; ++i0 ) {
+	  i0end   = hPFProduct->end(); i0 != i0end; ++i0, iCand++ ) {
     //for(unsigned int i0 = 0; i0 < lCandidates.size(); i0++) {
     //reco::PFCandidate pCand;
-    auto id = dummySinceTranslateIsNotStatic.translatePdgIdToType(i0->pdgId());
-    const reco::PFCandidate *pPF = dynamic_cast<const reco::PFCandidate*>(&(*i0));
-    reco::PFCandidate pCand( pPF ? *pPF : reco::PFCandidate(i0->charge(), i0->p4(), id) );
+    //auto id = dummySinceTranslateIsNotStatic.translatePdgIdToType(i0->pdgId());
     LorentzVector pVec = i0->p4();
     int val = i0 - i0begin;
 
-    // Find the Puppi particle matched to the input collection using the "user_index" of the object. 
-    auto puppiMatched = find_if( lCandidates.begin(), lCandidates.end(), [&val]( fastjet::PseudoJet const & i ){ return i.user_index() == val; } );
-    if ( puppiMatched != lCandidates.end() ) {
-      pVec.SetPxPyPzE(puppiMatched->px(),puppiMatched->py(),puppiMatched->pz(),puppiMatched->E());
-      fPuppiCandidates->push_back(pCand);
-    } else {
-      pVec.SetPxPyPzE( 0, 0, 0, 0);
+    if(!fProducePackedCollection){
+      auto id = dummySinceTranslateIsNotStatic.translatePdgIdToType(i0->pdgId());
+      const reco::PFCandidate *pPF = dynamic_cast<const reco::PFCandidate*>(&(*i0));
+      reco::PFCandidate pCand( pPF ? *pPF : reco::PFCandidate(i0->charge(), i0->p4(), id) );	// Find the Puppi particle matched to the input collection using the "user_index" of the object. 
+      auto puppiMatched = find_if( lCandidates.begin(), lCandidates.end(), [&val]( fastjet::PseudoJet const & i ){ return i.user_index() == val; } );
+      if ( puppiMatched != lCandidates.end() ) {
+	pVec.SetPxPyPzE(puppiMatched->px(),puppiMatched->py(),puppiMatched->pz(),puppiMatched->E());
+	fPuppiPFCandidates->push_back(pCand);
+      } else {
+	pVec.SetPxPyPzE( 0, 0, 0, 0);
+      }
+      pCand.setP4(pVec);    
+      puppiP4s.push_back( pVec );
+      // fPuppiCandidates->push_back(pCand);
     }
-    pCand.setP4(pVec);
-    puppiP4s.push_back( pVec );
-    // fPuppiCandidates->push_back(pCand);
+    else{
+      const pat::PackedCandidate *pPack = dynamic_cast<const pat::PackedCandidate*>(&(*i0));
+      pat::PackedCandidate pCand (*pPack);
+      // Find the Puppi particle matched to the input collection using the "user_index" of the object. 
+      auto puppiMatched = find_if( lCandidates.begin(), lCandidates.end(), [&val]( fastjet::PseudoJet const & i ){ return i.user_index() == val; } );
+      if ( puppiMatched != lCandidates.end() ) {
+	pVec.SetPxPyPzE(puppiMatched->px(),puppiMatched->py(),puppiMatched->pz(),puppiMatched->E());
+	fPuppiPackedCandidates->push_back(pCand);
+      } else {
+	pVec.SetPxPyPzE( 0, 0, 0, 0);
+      }
+      pCand.setP4(pVec);    
+      puppiP4s.push_back( pVec );
+    }
   }
 
   //Compute the modified p4s
@@ -233,12 +261,22 @@ void PuppiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   
   iEvent.put(lPupOut);
   iEvent.put(p4PupOut);
-  edm::OrphanHandle<reco::PFCandidateCollection> oh = iEvent.put( fPuppiCandidates );
-  for(unsigned int ic=0, nc = oh->size(); ic < nc; ++ic) {
+
+  if(!fProducePackedCollection){
+    edm::OrphanHandle<reco::PFCandidateCollection> oh = iEvent.put( fPuppiPFCandidates );
+    for(unsigned int ic=0, nc = oh->size(); ic < nc; ++ic) {
       reco::CandidatePtr pkref( oh, ic );
-      values[ic] = pkref;
-    
-   }  
+      values[ic] = pkref;      
+    }  
+  }
+  else{
+    edm::OrphanHandle<pat::PackedCandidateCollection> oh = iEvent.put( fPuppiPackedCandidates );
+    for(unsigned int ic=0, nc = oh->size(); ic < nc; ++ic) {
+      reco::CandidatePtr pkref( oh, ic );
+      values[ic] = pkref;      
+    }  
+  }
+  
   std::auto_ptr<edm::ValueMap<reco::CandidatePtr> > pfMap_p(new edm::ValueMap<reco::CandidatePtr>());
   edm::ValueMap<reco::CandidatePtr>::Filler filler(*pfMap_p);
   filler.insert(hPFProduct, values.begin(), values.end());
@@ -267,24 +305,31 @@ void PuppiProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 }
 
 // ------------------------------------------------------------------------------------------
+
 void PuppiProducer::beginJob() {
 }
 // ------------------------------------------------------------------------------------------
+
 void PuppiProducer::endJob() {
 }
 // ------------------------------------------------------------------------------------------
+
 void PuppiProducer::beginRun(edm::Run&, edm::EventSetup const&) {
 }
 // ------------------------------------------------------------------------------------------
+
 void PuppiProducer::endRun(edm::Run&, edm::EventSetup const&) {
 }
 // ------------------------------------------------------------------------------------------
+
 void PuppiProducer::beginLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&) {
 }
 // ------------------------------------------------------------------------------------------
+
 void PuppiProducer::endLuminosityBlock(edm::LuminosityBlock&, edm::EventSetup const&) {
 }
 // ------------------------------------------------------------------------------------------
+
 void PuppiProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   //The following says we do not know what parameters are allowed so do no validation
   // Please change this to state exactly what you do use, even if it is no parameters
@@ -292,5 +337,6 @@ void PuppiProducer::fillDescriptions(edm::ConfigurationDescriptions& description
   desc.setUnknown();
   descriptions.addDefault(desc);
 }
+
 //define this as a plug-in
 DEFINE_FWK_MODULE(PuppiProducer);
