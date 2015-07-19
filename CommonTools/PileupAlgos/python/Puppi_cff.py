@@ -27,6 +27,7 @@ puppiForward = cms.VPSet(
 puppi = cms.EDProducer("PuppiProducer",#cms.PSet(#"PuppiProducer",
                        puppiDiagnostics = cms.bool(False),
                        puppiForLeptons = cms.bool(False),
+                       producePackedCollection = cms.bool(False)
                        UseDeltaZCut   = cms.bool(True),
                        DeltaZCut      = cms.double(0.3),
                        candName       = cms.InputTag('particleFlow'),
