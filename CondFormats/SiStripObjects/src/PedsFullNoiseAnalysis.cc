@@ -24,10 +24,10 @@ PedsFullNoiseAnalysis::PedsFullNoiseAnalysis( const uint32_t& key )
     noiseSigmaGaus_(2,VFloat(128,sistrip::invalid_)),
     noiseSignificance_(2,VFloat(128,sistrip::invalid_)),
     noiseBin84_(2,VFloat(128,sistrip::invalid_)),
-    noiseSkewness_(2,VFloat(128,sistrip::invalid_)),
-    noiseKurtosis_(2,VFloat(128,sistrip::invalid_)),
-    noiseIntegralNsigma_(2,VFloat(128,sistrip::invalid_)),
-    noiseIntegral_(2,VFloat(128,sistrip::invalid_)),
+    residualSkewness_(2,VFloat(128,sistrip::invalid_)),
+    residualKurtosis_(2,VFloat(128,sistrip::invalid_)),
+    residualIntegralNsigma_(2,VFloat(128,sistrip::invalid_)),
+    residualIntegral_(2,VFloat(128,sistrip::invalid_)),
     deadStrip_(2,VInt(0,sistrip::invalid_)),
     badStrip_(2,VInt(0,sistrip::invalid_)),
     shiftedStrip_(2,VInt(0,sistrip::invalid_)),
@@ -99,10 +99,10 @@ PedsFullNoiseAnalysis::PedsFullNoiseAnalysis()
     noiseSigmaGaus_(2,VFloat(128,sistrip::invalid_)),
     noiseSignificance_(2,VFloat(128,sistrip::invalid_)),
     noiseBin84_(2,VFloat(128,sistrip::invalid_)),
-    noiseSkewness_(2,VFloat(128,sistrip::invalid_)),
-    noiseKurtosis_(2,VFloat(128,sistrip::invalid_)),
-    noiseIntegralNsigma_(2,VFloat(128,sistrip::invalid_)),
-    noiseIntegral_(2,VFloat(128,sistrip::invalid_)),
+    residualSkewness_(2,VFloat(128,sistrip::invalid_)),
+    residualKurtosis_(2,VFloat(128,sistrip::invalid_)),
+    residualIntegralNsigma_(2,VFloat(128,sistrip::invalid_)),
+    residualIntegral_(2,VFloat(128,sistrip::invalid_)),
     deadStrip_(2,VInt(0,sistrip::invalid_)),
     badStrip_(2,VInt(0,sistrip::invalid_)),
     shiftedStrip_(2,VInt(0,sistrip::invalid_)),
@@ -174,10 +174,10 @@ void PedsFullNoiseAnalysis::reset() {
   noiseSigmaGaus_    = VVFloat(2,VFloat(128,sistrip::invalid_));
   noiseSignificance_ = VVFloat(2,VFloat(128,sistrip::invalid_));
   noiseBin84_    = VVFloat(2,VFloat(128,sistrip::invalid_));
-  noiseSkewness_ = VVFloat(2,VFloat(128,sistrip::invalid_));
-  noiseKurtosis_ = VVFloat(2,VFloat(128,sistrip::invalid_));
-  noiseIntegralNsigma_ = VVFloat(2,VFloat(128,sistrip::invalid_));
-  noiseIntegral_       = VVFloat(2,VFloat(128,sistrip::invalid_));
+  residualSkewness_ = VVFloat(2,VFloat(128,sistrip::invalid_));
+  residualKurtosis_ = VVFloat(2,VFloat(128,sistrip::invalid_));
+  residualIntegralNsigma_ = VVFloat(2,VFloat(128,sistrip::invalid_));
+  residualIntegral_       = VVFloat(2,VFloat(128,sistrip::invalid_));
 
   deadStrip_     = VVInt(2,VInt(0,sistrip::invalid_)); 
   badStrip_      = VVInt(2,VInt(0,sistrip::invalid_)); 

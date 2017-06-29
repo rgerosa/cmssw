@@ -294,9 +294,9 @@ void PedsFullNoiseHistosUsingDb::create( SiStripConfigDb::AnalysisDescriptionsV&
   SiStripFedKey fed_key( anal->fedKey() );
   
   for ( uint16_t iapv = 0; iapv < 2; ++iapv ) {
-    
     // Create description
-    PedestalsAnalysisDescription* tmp;
+    PedestalsAnalysisDescription* tmp = NULL;
+    /*
     tmp = new PedestalsAnalysisDescription(
 					   //// Bad flags for the analysis summary
 					   anal->deadStrip()[iapv],
@@ -305,7 +305,7 @@ void PedsFullNoiseHistosUsingDb::create( SiStripConfigDb::AnalysisDescriptionsV&
 					   anal->lowNoiseStrip()[iapv],
 					   anal->largeNoiseStrip()[iapv],
 					   anal->largeNoiseSignificance()[iapv],
-					   anal->fitStatus()[iapv],
+					   anal->badFitStatus()[iapv],
 					   anal->badADProbab()[iapv],
 					   anal->badKSProbab()[iapv],
 					   anal->badJBProbab()[iapv],
@@ -335,10 +335,10 @@ void PedsFullNoiseHistosUsingDb::create( SiStripConfigDb::AnalysisDescriptionsV&
 					   anal->noiseSigmaGaus()[iapv],
 					   anal->noiseSignificance()[iapv],
 					   anal->noiseBin84()[iapv],
-					   anal->noiseSkewness()[iapv],
-					   anal->noiseKurtosis()[iapv],
-					   anal->noiseIntegralNsigma()[iapv],
-					   anal->noiseIntegral()[iapv],
+					   anal->residualSkewness()[iapv],
+					   anal->residualKurtosis()[iapv],
+					   anal->residualIntegralNsigma()[iapv],
+					   anal->residualIntegral()[iapv],
 					   ///// coordinates
 					   fec_key.fecCrate(),
 					   fec_key.fecSlot(),
@@ -356,6 +356,7 @@ void PedsFullNoiseHistosUsingDb::create( SiStripConfigDb::AnalysisDescriptionsV&
 					   fed_key.fedApv()
 					   );
     
+    */
     // Add comments
     typedef std::vector<std::string> Strings;
     Strings errors = anal->getErrorCodes();

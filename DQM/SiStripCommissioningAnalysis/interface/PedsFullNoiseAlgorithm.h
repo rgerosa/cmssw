@@ -13,6 +13,7 @@ class TH1;
     @author M. Wingham, R.Bainbridge
     @brief Histogram-based analysis for pedestal run.
 */
+
 class PedsFullNoiseAlgorithm : public CommissioningAlgorithm {
   
  public:
@@ -47,10 +48,18 @@ class PedsFullNoiseAlgorithm : public CommissioningAlgorithm {
   Histo hNoise1D_;
   
   /** Analysis parameters */
-  float deadStripMax_;
-  float noisyStripMin_;
   std::string noiseDef_;
-  float ksProbCut_;
+  float maxDriftResidualCut_;
+  float minStripNoiseCut_;
+  float maxStripNoiseCut_;
+  float maxStripNoiseSignificanceCut_;
+  float adProbabCut_;
+  float ksProbabCut_;
+  float jbProbabCut_;
+  float chi2ProbabCut_;
+  float kurtosisCut_;
+  float integralTailCut_;
+  
 };
 
 const PedsFullNoiseAlgorithm::Histo& PedsFullNoiseAlgorithm::hPeds() const { return hPeds_; }

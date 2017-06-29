@@ -49,10 +49,10 @@ class PedsFullNoiseAnalysis : public CommissioningAnalysis {
     inline const VVFloat& noiseSigmaGaus() const; // from gaus fit
     inline const VVFloat& noiseSignificance() const; // noise significance
     inline const VVFloat& noiseBin84() const;
-    inline const VVFloat& noiseSkewness() const;
-    inline const VVFloat& noiseKurtosis() const;
-    inline const VVFloat& noiseIntegralNsigma() const;
-    inline const VVFloat& noiseIntegral() const;
+    inline const VVFloat& residualSkewness() const;
+    inline const VVFloat& residualKurtosis() const;
+    inline const VVFloat& residualIntegralNsigma() const;
+    inline const VVFloat& residualIntegral() const;
         
     // status for different class of bad or problematic strips
     inline const VVInt& deadStrip() const; 
@@ -114,10 +114,10 @@ class PedsFullNoiseAnalysis : public CommissioningAnalysis {
     VVFloat noiseSigmaGaus_;
     VVFloat noiseSignificance_;
     VVFloat noiseBin84_;
-    VVFloat noiseSkewness_;
-    VVFloat noiseKurtosis_;
-    VVFloat noiseIntegralNsigma_;
-    VVFloat noiseIntegral_;
+    VVFloat residualSkewness_;
+    VVFloat residualKurtosis_;
+    VVFloat residualIntegralNsigma_;
+    VVFloat residualIntegral_;
 
     VVInt deadStrip_;
     VVInt badStrip_;
@@ -166,10 +166,10 @@ const PedsFullNoiseAnalysis::VVFloat& PedsFullNoiseAnalysis::noiseRMS() const { 
 const PedsFullNoiseAnalysis::VVFloat& PedsFullNoiseAnalysis::noiseSigmaGaus() const { return noiseSigmaGaus_;}
 const PedsFullNoiseAnalysis::VVFloat& PedsFullNoiseAnalysis::noiseSignificance() const { return noiseSignificance_;}
 const PedsFullNoiseAnalysis::VVFloat& PedsFullNoiseAnalysis::noiseBin84() const { return noiseBin84_;}
-const PedsFullNoiseAnalysis::VVFloat& PedsFullNoiseAnalysis::noiseSkewness() const { return noiseSkewness_;}
-const PedsFullNoiseAnalysis::VVFloat& PedsFullNoiseAnalysis::noiseKurtosis() const { return noiseKurtosis_;}
-const PedsFullNoiseAnalysis::VVFloat& PedsFullNoiseAnalysis::noiseIntegralNsigma() const { return noiseIntegralNsigma_;}
-const PedsFullNoiseAnalysis::VVFloat& PedsFullNoiseAnalysis::noiseIntegral() const { return noiseIntegral_;}
+const PedsFullNoiseAnalysis::VVFloat& PedsFullNoiseAnalysis::residualSkewness() const { return residualSkewness_;}
+const PedsFullNoiseAnalysis::VVFloat& PedsFullNoiseAnalysis::residualKurtosis() const { return residualKurtosis_;}
+const PedsFullNoiseAnalysis::VVFloat& PedsFullNoiseAnalysis::residualIntegralNsigma() const { return residualIntegralNsigma_;}
+const PedsFullNoiseAnalysis::VVFloat& PedsFullNoiseAnalysis::residualIntegral() const { return residualIntegral_;}
 
 const PedsFullNoiseAnalysis::VVInt& PedsFullNoiseAnalysis::deadStrip() const { return deadStrip_;}
 const PedsFullNoiseAnalysis::VVInt& PedsFullNoiseAnalysis::badStrip() const { return badStrip_;}

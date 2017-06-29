@@ -19,11 +19,11 @@ PedsFullNoiseAlgorithm::PedsFullNoiseAlgorithm( const edm::ParameterSet & pset, 
   : CommissioningAlgorithm(anal),
     hPeds_(0,""),
     hNoise_(0,""),
-    hNoise1D_(0,""),
-    deadStripMax_(pset.getParameter<double>("DeadStripMax")),
-    noisyStripMin_(pset.getParameter<double>("NoisyStripMin")),
-    noiseDef_(pset.getParameter<std::string>("NoiseDefinition")),
-    ksProbCut_(pset.getParameter<double>("KsProbCut"))
+    hNoise1D_(0,"")
+    //    deadStripMax_(pset.getParameter<double>("DeadStripMax")),
+    //    noisyStripMin_(pset.getParameter<double>("NoisyStripMin")),
+    //    noiseDef_(pset.getParameter<std::string>("NoiseDefinition")),
+    //    ksProbCut_(pset.getParameter<double>("KsProbCut"))
 {
   //LogDebug(mlCommissioning_)
   //  << "[PedsFullNoiseAlgorithm::" << __func__ << "]"
@@ -37,7 +37,7 @@ PedsFullNoiseAlgorithm::PedsFullNoiseAlgorithm( const edm::ParameterSet & pset, 
 //
  
 void PedsFullNoiseAlgorithm::extract( const std::vector<TH1*>& histos ) { 
-
+  /*
   if ( !anal() ) {
     edm::LogWarning(mlCommissioning_)
       << "[PedsFullNoiseAlgorithm::" << __func__ << "]"
@@ -70,6 +70,7 @@ void PedsFullNoiseAlgorithm::extract( const std::vector<TH1*>& histos ) {
       continue;
     }
 */
+  /*
     // Extract peds histos
     if ( title.extraInfo().find(sistrip::extrainfo::roughPedestals_) != std::string::npos ) {
       //@@ something here for rough peds?
@@ -89,13 +90,13 @@ void PedsFullNoiseAlgorithm::extract( const std::vector<TH1*>& histos ) {
       anal()->addErrorCode(sistrip::unexpectedExtraInfo_);
     }  
   }
-
+  */
 }
 
 // -----------------------------------------------------------------------------
 // 
 void PedsFullNoiseAlgorithm::analyse() {
-
+  /*
   if ( !anal() ) {
     edm::LogWarning(mlCommissioning_)
       << "[PedsFullNoiseAlgorithm::" << __func__ << "]"
@@ -352,4 +353,5 @@ void PedsFullNoiseAlgorithm::analyse() {
     }// strip loop to set dead or noisy strips   
 	} // apv loop
   //std::cout << std::endl;
+  */
 }
