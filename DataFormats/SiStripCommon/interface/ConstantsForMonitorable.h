@@ -85,14 +85,33 @@ namespace sistrip {
   static const char noiseSpread_[]          = "NoiseRmsSpread";
   static const char noiseMax_[]             = "NoiseMax";
   static const char noiseMin_[]             = "NoiseMin";
-  static const char numOfDead_[]            = "NumOfDeadStrips";
-  static const char numOfNoisy_[]           = "NumOfNoisyStrips";
-  static const char noiseKSAllStrips_[]     = "StripNoiseKS";
-  static const char noiseChi2AllStrips_[]   = "StripNoiseChi2";
-  static const char noiseGausAllStrips_[]   = "StripNoiseGaus";
-  static const char noiseBin84AllStrips_[]  = "StripNoiseBin84";
-  static const char noiseRMSAllStrips_[]  	= "StripNoiseRMS";
-  static const char noiseSignif_[]  		= "StripNoiseSignif";
+
+  static const char numOfDeadStrisp_[]        = "NumOfDeadStrips";
+  static const char numOfBadStrips_[]         = "NumOfBadStrips";
+  static const char numOfBadADProbabStrips_[] = "NumOfBadADProbabStrips";
+  static const char numOfBadKSProbabStrips_[] = "NumOfBadKSProbabStrips";
+  static const char numOfBadJBProbabStrips_[] = "NumOfBadJBProbabStrips";
+  static const char numOfBadChi2ProbabStrips_[] = "NumOfBadChi2ProbabStrips";
+  static const char numOfBadShiftedStrips_[]    = "NumOfBadShfitedStrips";
+  static const char numOfBadLowNoiseStrips_[]   = "NumOfBadLowNoiseStrips";
+  static const char numOfBadLargeNoiseStrips_[] = "NumOfBadLargeNoiseStrips";
+  static const char numOfBadLargeNoiseSignificanceStrips_[] = "NumOfBadLargeNoiseSignificanceStrips";
+  static const char numOfBadTailStrips_[]         = "NumOfBadTailStrips";
+  static const char numOfBadFitStatusStrips_[]    = "NumOfBadFitStatusStrips";
+  static const char numOfBadDoublePeakStrips_[]   = "NumOfBadDoublePeakStrips";
+
+  static const char adProbabAllStrips_[]    = "adProbabStrips";
+  static const char ksProbabAllStrips_[]    = "ksProbabStrips";
+  static const char jbProbabAllStrips_[]    = "jbProbabStrips";
+  static const char chi2ProbabAllStrips_[]  = "chi2ProbabStrips";
+  static const char noiseRMSAllStrips_[]    = "noiseRMSStrips";
+  static const char noiseSigmaGausAllStrips_[]    = "noiseSigmaGausStrips";
+  static const char noiseSignificanceAllStrips_[] = "noiseSignificanceStrips";
+  static const char noiseBin84AllStrips_[]  = "noiseBin84Strips";
+  static const char noiseSkewnessAllStrips_[]  = "noiseSkewnessStrips";
+  static const char noiseKurtosisAllStrips_[]  = "noiseKurtosisStrips";
+  static const char noiseIntegralNsigmaAllStrips_[]  = "noiseIntegralNsigmaStrips";
+  static const char noiseIntegralAllStrips_[]  = "noiseIntegralStrips";
   
   // Fine Delay
   static const char fineDelayPos_[]       = "FineDelayPosition";
@@ -178,25 +197,47 @@ namespace sistrip {
 		     VPSP_SCAN_DIGITAL_HIGH = 1405, 
 		     VPSP_SCAN_DIGITAL_LOW  = 1406, 
 
+		     // Pedestal observables
 		     PEDESTALS_ALL_STRIPS = 201, 
 		     PEDESTALS_MEAN       = 202, 
 		     PEDESTALS_SPREAD     = 203, 
 		     PEDESTALS_MAX        = 204, 
 		     PEDESTALS_MIN        = 205, 
-
+		     // Noise observables in pedestal runs
 		     NOISE_ALL_STRIPS = 206, 
 		     NOISE_MEAN       = 207, 
 		     NOISE_SPREAD     = 208, 
 		     NOISE_MAX        = 209, 
 		     NOISE_MIN        = 210, 
+		     // Bad strips
 		     NUM_OF_DEAD      = 211, 
-		     NUM_OF_NOISY     = 212,
-		     NOISE_KS_ALL_STRIPS 	= 215,
-		     NOISE_GAUS_ALL_STRIPS  = 216,
-		     NOISE_BIN_84_ALL_STRIPS= 217,
-		     NOISE_CHI2_ALL_STRIPS 	= 218,
-		     NOISE_SIGNIF_ALL_STRIPS= 219,
-             NOISE_RMS_ALL_STRIPS 	= 220,
+		     NUM_OF_BAD       = 212,
+		     NUM_OF_BAD_SHIFTED = 213,
+		     NUM_OF_BAD_LOW_NOISE = 214,
+		     NUM_OF_BAD_LARGE_NOISE  = 215,
+		     NUM_OF_BAD_LARGE_SIGNIF = 216,
+		     NUM_OF_BAD_FIT_STATUS = 217,
+		     NUM_OF_BAD_AD_PROBAB = 218,
+		     NUM_OF_BAD_KS_PROBAB = 219,
+		     NUM_OF_BAD_JB_PROBAB = 220,
+		     NUM_OF_BAD_CHI2_PROBAB = 221,
+		     NUM_OF_BAD_TAIL = 222,
+		     NUM_OF_BAD_DOUBLE_PEAK = 223,
+		     //
+		     AD_PROBAB_ALL_STRIPS   = 224,
+		     KS_PROBAB_ALL_STRIPS   = 225,
+		     JB_PROBAB_ALL_STRIPS   = 226,
+		     CHI2_PROBAB_ALL_STRIPS = 227,
+		     NOISE_RMS_ALL_STRIPS = 228,
+		     NOISE_GAUS_ALL_STRIPS = 229,
+		     NOISE_SIGNIFICANCE_ALL_STRIPS= 230,
+		     NOISE_BIN_84_ALL_STRIPS = 231,
+		     NOISE_SKEWNESS_ALL_STRIPS = 232,
+		     NOISE_KURTOSIS_ALL_STRIPS = 233,
+		     NOISE_INTEGRALNSIGMA_ALL_STRIPS = 234,
+		     NOISE_INTEGRAL_ALL_STRIPS = 235,
+
+		     
 		     FINE_DELAY_POS 		= 601,
 		     FINE_DELAY_ERROR 		= 602,
 
