@@ -385,6 +385,7 @@ std::string SiStripEnumsAndStrings::monitorable( const sistrip::Monitorable& mon
   else if ( mon == sistrip::NUM_OF_BAD_TAIL ) { return sistrip::numOfBadTailStrips_; }
   else if ( mon == sistrip::NUM_OF_BAD_DOUBLE_PEAK ) { return sistrip::numOfBadDoublePeakStrips_; }
 
+  else if ( mon == sistrip::BAD_STRIP_BIT_ALL_STRIPS ) { return sistrip::badStripBit_; }
   else if ( mon == sistrip::AD_PROBAB_ALL_STRIPS ) { return sistrip::adProbabAllStrips_; }
   else if ( mon == sistrip::KS_PROBAB_ALL_STRIPS ) { return sistrip::ksProbabAllStrips_; }
   else if ( mon == sistrip::JB_PROBAB_ALL_STRIPS ) { return sistrip::jbProbabAllStrips_; }
@@ -523,6 +524,7 @@ sistrip::Monitorable SiStripEnumsAndStrings::monitorable( const std::string& mon
   else if ( mon.find( sistrip::numOfBadTailStrips_ ) != std::string::npos ) { return sistrip::NUM_OF_BAD_TAIL; }
   else if ( mon.find( sistrip::numOfBadDoublePeakStrips_ ) != std::string::npos ) { return sistrip::NUM_OF_BAD_DOUBLE_PEAK; }
 
+  else if ( mon.find( sistrip::badStripBit_ ) != std::string::npos ) { return sistrip::BAD_STRIP_BIT_ALL_STRIPS; }
   else if ( mon.find( sistrip::adProbabAllStrips_ ) != std::string::npos ) { return sistrip::AD_PROBAB_ALL_STRIPS; }
   else if ( mon.find( sistrip::ksProbabAllStrips_ ) != std::string::npos ) { return sistrip::KS_PROBAB_ALL_STRIPS; }
   else if ( mon.find( sistrip::jbProbabAllStrips_ ) != std::string::npos ) { return sistrip::JB_PROBAB_ALL_STRIPS; }

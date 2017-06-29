@@ -206,18 +206,26 @@ void PedsFullNoiseHistosUsingDb::update( SiStripConfigDb::FedDescriptionsRange f
 	    
 	    uint32_t pedestalVal = 0;
 	    uint32_t noiseVal = 0;
-
+	    uint32_t lowThr   = 0;
+	    uint32_t highThr  = 0;
+	    
 	    // download the previous pedestal/noise payload from the DB
 	    if(uploadOnlyStripMaskingBit_){ 
 	      // understand and implement how to download the payload	      
+	      pedestalVal = temp.getPedestal();
+	      noiseVal = temp.getNoise();
+	      lowThr   = temp.getLowThreshold();
+	      highThr  = temp.getHighThreshold();
 	    }
 	    else{	      
 	      pedestalVal = static_cast<uint32_t>( anal->peds()[iapv][istr]-pedshift );
 	      noiseVal = static_cast<uint32_t>(anal->noise()[iapv][istr]);
+	      lowThr   = lowThreshold_;
+	      highThr  = highThreshold_;
 	    }
-
 	    
-            Fed9U::Fed9UStripDescription data(pedestalVal,highThreshold_,lowThreshold_,noiseVal,disableStrip);
+	    
+            Fed9U::Fed9UStripDescription data(pedestalVal,highThr,lowThr,noiseVal,disableStrip);
 
             std::stringstream ss;
             if ( data.getDisable() && edm::isDebugEnabled() ) {

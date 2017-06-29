@@ -30,6 +30,7 @@ PedsFullNoiseAnalysis::PedsFullNoiseAnalysis( const uint32_t& key )
     residualIntegral_(2,VFloat(128,sistrip::invalid_)),
     deadStrip_(2,VInt(0,sistrip::invalid_)),
     badStrip_(2,VInt(0,sistrip::invalid_)),
+    badStripBit_(2,VInt(128,sistrip::invalid_)),
     shiftedStrip_(2,VInt(0,sistrip::invalid_)),
     lowNoiseStrip_(2,VInt(0,sistrip::invalid_)),
     largeNoiseStrip_(2,VInt(0,sistrip::invalid_)),
@@ -105,6 +106,7 @@ PedsFullNoiseAnalysis::PedsFullNoiseAnalysis()
     residualIntegral_(2,VFloat(128,sistrip::invalid_)),
     deadStrip_(2,VInt(0,sistrip::invalid_)),
     badStrip_(2,VInt(0,sistrip::invalid_)),
+    badStripBit_(2,VInt(128,sistrip::invalid_)),
     shiftedStrip_(2,VInt(0,sistrip::invalid_)),
     lowNoiseStrip_(2,VInt(0,sistrip::invalid_)),
     largeNoiseStrip_(2,VInt(0,sistrip::invalid_)),
@@ -181,6 +183,7 @@ void PedsFullNoiseAnalysis::reset() {
 
   deadStrip_     = VVInt(2,VInt(0,sistrip::invalid_)); 
   badStrip_      = VVInt(2,VInt(0,sistrip::invalid_)); 
+  badStripBit_   = VVInt(2,VInt(128,sistrip::invalid_)); 
   shiftedStrip_  = VVInt(2,VInt(0,sistrip::invalid_)); 
   lowNoiseStrip_ = VVInt(2,VInt(0,sistrip::invalid_));  
   largeNoiseStrip_ = VVInt(2,VInt(0,sistrip::invalid_));

@@ -57,6 +57,7 @@ class PedsFullNoiseAnalysis : public CommissioningAnalysis {
     // status for different class of bad or problematic strips
     inline const VVInt& deadStrip() const; 
     inline const VVInt& badStrip() const;
+    inline const VVInt& badStripBit() const;
     inline const VVInt& shiftedStrip() const;
     inline const VVInt& lowNoiseStrip() const;
     inline const VVInt& largeNoiseStrip() const;
@@ -121,6 +122,7 @@ class PedsFullNoiseAnalysis : public CommissioningAnalysis {
 
     VVInt deadStrip_;
     VVInt badStrip_;
+    VVInt badStripBit_;
     VVInt shiftedStrip_;
     VVInt lowNoiseStrip_;
     VVInt largeNoiseStrip_;
@@ -173,6 +175,7 @@ const PedsFullNoiseAnalysis::VVFloat& PedsFullNoiseAnalysis::residualIntegral() 
 
 const PedsFullNoiseAnalysis::VVInt& PedsFullNoiseAnalysis::deadStrip() const { return deadStrip_;}
 const PedsFullNoiseAnalysis::VVInt& PedsFullNoiseAnalysis::badStrip() const { return badStrip_;}
+const PedsFullNoiseAnalysis::VVInt& PedsFullNoiseAnalysis::badStripBit() const { return badStripBit_;}
 const PedsFullNoiseAnalysis::VVInt& PedsFullNoiseAnalysis::shiftedStrip() const { return shiftedStrip_;}
 const PedsFullNoiseAnalysis::VVInt& PedsFullNoiseAnalysis::lowNoiseStrip() const { return lowNoiseStrip_;}
 const PedsFullNoiseAnalysis::VVInt& PedsFullNoiseAnalysis::largeNoiseStrip() const { return largeNoiseStrip_;}

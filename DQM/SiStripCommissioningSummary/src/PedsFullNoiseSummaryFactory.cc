@@ -15,6 +15,7 @@ void PedsFullNoiseSummaryFactory::extract( Iterator iter ) {
   if ( !anal ) { return; }
     
   std::vector< float > temp(128, 1. * sistrip::invalid_ );
+  std::vector< uint16_t > temp2(128, sistrip::invalid_);
 
   std::vector< std::vector<float> > value(2, temp);
   std::vector< std::vector<float> > peds (2, temp);
@@ -31,6 +32,7 @@ void PedsFullNoiseSummaryFactory::extract( Iterator iter ) {
   std::vector< std::vector<float> > residualKurtosis(2, temp);
   std::vector< std::vector<float> > residualIntegralNsigma(2, temp);
   std::vector< std::vector<float> > residualIntegral(2, temp);
+  std::vector< std::vector<uint16_t> > badStripBit(2, temp2);
 
   // pedestal values
   peds[0] 	= anal->peds()[0];
@@ -77,7 +79,12 @@ void PedsFullNoiseSummaryFactory::extract( Iterator iter ) {
   // noise integral N sigma
   residualIntegral[0] = anal->residualIntegral()[0]; 
   residualIntegral[1] = anal->residualIntegral()[1]; 
-
+  // bit to indicate if a strip is flagged as bad or not
+  residualIntegral[0] = anal->residualIntegral()[0]; 
+  residualIntegral[1] = anal->residualIntegral()[1]; 
+  // bit to indicate if a strip is bad (1) or not (0)
+  badStripBit[0] = anal->badStripBit()[0];
+  badStripBit[1] = anal->badStripBit()[1];
 
   bool all_strips = false;
 
@@ -218,6 +225,16 @@ void PedsFullNoiseSummaryFactory::extract( Iterator iter ) {
     for ( uint16_t iks = 0; iks < bins; iks++ ) {
       value[0][iks] = residualIntegral[0][iks];
       value[1][iks] = residualIntegral[1][iks];     
+    }
+  } 
+
+  else if ( mon_ == sistrip::BAD_STRIP_BIT_ALL_STRIPS) {
+    all_strips = true;
+    uint16_t bins = badStripBit[0].size();
+	if ( badStripBit[0].size() < badStripBit[1].size() ) { bins = badStripBit[1].size(); }
+    for ( uint16_t iks = 0; iks < bins; iks++ ) {
+      value[0][iks] = 1.*badStripBit[0][iks];
+      value[1][iks] = 1.*badStripBit[1][iks];     
     }
   } 
   
@@ -415,6 +432,9 @@ void PedsFullNoiseSummaryFactory::format() {
   }
   else if( mon_ == sistrip::RESIDUAL_INTEGRAL_ALL_STRIPS) {
     generator_->axisLabel("Residual Integral" );    
+  }
+  else if( mon_ == sistrip::BAD_STRIP_BIT_ALL_STRIPS) {
+    generator_->axisLabel("Bad Strip Bit" );    
   }
   else if( mon_ == sistrip::NUM_OF_DEAD) {
   }

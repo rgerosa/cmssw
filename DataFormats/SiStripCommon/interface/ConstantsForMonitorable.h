@@ -101,6 +101,7 @@ namespace sistrip {
   static const char numOfBadFitStatusStrips_[]    = "NumOfBadFitStatusStrips";
   static const char numOfBadDoublePeakStrips_[]   = "NumOfBadDoublePeakStrips";
 
+  static const char badStripBit_[]          = "badStripBit";
   static const char adProbabAllStrips_[]    = "adProbabStrips";
   static const char ksProbabAllStrips_[]    = "ksProbabStrips";
   static const char jbProbabAllStrips_[]    = "jbProbabStrips";
@@ -225,19 +226,20 @@ namespace sistrip {
 		     NUM_OF_BAD_CHI2_PROBAB = 222,
 		     NUM_OF_BAD_TAIL = 223,
 		     NUM_OF_BAD_DOUBLE_PEAK = 224,
-		     //		     
-		     AD_PROBAB_ALL_STRIPS   = 225,
-		     KS_PROBAB_ALL_STRIPS   = 226,
-		     JB_PROBAB_ALL_STRIPS   = 227,
-		     CHI2_PROBAB_ALL_STRIPS = 228,
-		     NOISE_RMS_ALL_STRIPS = 229,
-		     NOISE_GAUS_ALL_STRIPS = 230,
-		     NOISE_SIGNIFICANCE_ALL_STRIPS= 231,
-		     NOISE_BIN_84_ALL_STRIPS = 232,
-		     RESIDUAL_SKEWNESS_ALL_STRIPS = 233,
-		     RESIDUAL_KURTOSIS_ALL_STRIPS = 234,
-		     RESIDUAL_INTEGRALNSIGMA_ALL_STRIPS = 235,
-		     RESIDUAL_INTEGRAL_ALL_STRIPS = 236,
+		     //	
+		     BAD_STRIP_BIT_ALL_STRIPS = 225,
+		     AD_PROBAB_ALL_STRIPS   = 226,
+		     KS_PROBAB_ALL_STRIPS   = 227,
+		     JB_PROBAB_ALL_STRIPS   = 228,
+		     CHI2_PROBAB_ALL_STRIPS = 229,
+		     NOISE_RMS_ALL_STRIPS = 230,
+		     NOISE_GAUS_ALL_STRIPS = 231,
+		     NOISE_SIGNIFICANCE_ALL_STRIPS= 232,
+		     NOISE_BIN_84_ALL_STRIPS = 233,
+		     RESIDUAL_SKEWNESS_ALL_STRIPS = 234,
+		     RESIDUAL_KURTOSIS_ALL_STRIPS = 235,
+		     RESIDUAL_INTEGRALNSIGMA_ALL_STRIPS = 236,
+		     RESIDUAL_INTEGRAL_ALL_STRIPS = 237,
 		     
 		     FINE_DELAY_POS 		= 601,
 		     FINE_DELAY_ERROR 		= 602,
