@@ -59,8 +59,9 @@ db_client = cms.EDAnalyzer("SiStripCommissioningOfflineDbClient",
         HighThreshold    = cms.double(5),  ## analysis-wide high threshold for the fed zero suppression
         LowThreshold     = cms.double(2),  ## analysis-wide low threshold for the fed zero suppression
         #### Flags on bad strips
-        KeepsStripsDisabled = cms.bool(False), ### True: if a strip is bad in the db, it will be still bad; False: if a strip was bad, now the analysis will tell us if it's bad or not
-        SkipEmptyStrips =  cms.bool(True), ## in the analysis, if true strips with no data are not marked, otherwise they will be bad
+        UploadOnlyStripBadChannelBit = cms.bool(False), ### True: means that pedestal-noise are not changed in the FED version --> use old values
+        KeepStripsDisabled = cms.bool(False), ### True: if a strip is bad in the db, it will be still bad; False: if a strip was bad, now the analysis will tell us if it's bad or not
+        SkipEmptyStrips  =  cms.bool(True), ## in the analysis, if true strips with no data are not marked, otherwise they will be bad
         DisableBadStrips = cms.bool(True), ## when the upload is performed, strips are masked
         ),
   SamplingParameters       = cms.PSet(),
