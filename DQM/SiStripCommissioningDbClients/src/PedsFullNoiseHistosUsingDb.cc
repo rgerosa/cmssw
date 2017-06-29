@@ -174,7 +174,7 @@ void PedsFullNoiseHistosUsingDb::update( SiStripConfigDb::FedDescriptionsRange f
 	      if(disableBadStrips_){
 		
 		SiStripFedKey fed_key(anal->fedKey());              
-              	PedsFullNoiseAnalysis::VInt dead = anal->dead()[iapv];
+              	PedsFullNoiseAnalysis::VInt dead = anal->deadStrip()[iapv];
               	if (not skipEmptyStrips_ and  // if one don't want to skip dead strips
 		    find( dead.begin(), dead.end(), istr ) != dead.end() ) {
 		  disableStrip = true;
@@ -339,8 +339,6 @@ void PedsFullNoiseHistosUsingDb::create( SiStripConfigDb::AnalysisDescriptionsV&
 					   anal->noiseKurtosis()[iapv],
 					   anal->noiseIntegralNsigma()[iapv],
 					   anal->noiseIntegral()[iapv],
-					   anal->ashmanDistance()[iapv],
-					   anal->amplitudeRatio()[iapv],
 					   ///// coordinates
 					   fec_key.fecCrate(),
 					   fec_key.fecSlot(),

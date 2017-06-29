@@ -68,28 +68,25 @@ void PedsFullNoiseHistograms::histoAnalysis( bool debug ) {
     // Retrieve pointers to peds and noise histos
     std::vector<TH1*> hists;
     Histos::const_iterator ihis = iter->second.begin(); 
+
     for ( ; ihis != iter->second.end(); ihis++ ) {
-      // pedestal profiles
+      // pedestal and noise 1D profiles
       TProfile* prof = ExtractTObject<TProfile>().extract( (*ihis)->me_ );
       if ( prof ) { hists.push_back(prof); }
-      //@@ Common mode histos?...
-      //TH1F* his = ExtractTObject<TH1F>().extract( (*ihis)->me_ );
-      //if ( his ) { profs.push_back(his); }
-      // noise 2D histos
+      // 2D noise histograms
       TH2S * his2D = ExtractTObject<TH2S>().extract( (*ihis)->me_ );
       if ( his2D ) { hists.push_back(his2D); }
     }
-
+    
     // Perform histo analysis
     PedsFullNoiseAnalysis * anal = new PedsFullNoiseAnalysis( iter->first );
     PedsFullNoiseAlgorithm algo( this->pset(), anal );
     algo.analysis( hists );
     data()[iter->first] = anal; 
-    if ( anal->isValid() ) { valid++; }
-    if ( !anal->getErrorCodes().empty() ) { 
+    if (anal->isValid() ) { valid++; }
+    if (!anal->getErrorCodes().empty() ) { 
       errors[anal->getErrorCodes()[0]]++;
-    }
-    
+    }    
   }
   
   if ( !histos().empty() ) {
@@ -118,8 +115,7 @@ void PedsFullNoiseHistograms::histoAnalysis( bool debug ) {
     edm::LogWarning(mlDqmClient_) 
       << "[PedsFullNoiseHistograms::" << __func__ << "]"
       << " No histograms to analyze!";
-  }
-  
+  }  
 }
 
 // -----------------------------------------------------------------------------	 
