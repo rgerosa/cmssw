@@ -24,15 +24,16 @@ void PedsFullNoiseSummaryFactory::extract( Iterator iter ) {
   std::vector< std::vector<float> > ksProbab(2, temp);
   std::vector< std::vector<float> > jbProbab(2, temp);
   std::vector< std::vector<float> > chi2Probab(2, temp);
-  std::vector< std::vector<float> > noiseRMS(2, temp);
-  std::vector< std::vector<float> > noiseGaus(2, temp);
+  std::vector< std::vector<float> > residualRMS(2, temp);
+  std::vector< std::vector<float> > residualGaus(2, temp);
   std::vector< std::vector<float> > noiseSignificance(2, temp);
-  std::vector< std::vector<float> > noiseBin84(2, temp);
+  std::vector< std::vector<float> > residualMean(2, temp);
   std::vector< std::vector<float> > residualSkewness(2, temp);
   std::vector< std::vector<float> > residualKurtosis(2, temp);
   std::vector< std::vector<float> > residualIntegralNsigma(2, temp);
   std::vector< std::vector<float> > residualIntegral(2, temp);
   std::vector< std::vector<uint16_t> > badStripBit(2, temp2);
+  std::vector< std::vector<uint16_t> > deadStripBit(2, temp2);
 
   // pedestal values
   peds[0] 	= anal->peds()[0];
@@ -55,18 +56,18 @@ void PedsFullNoiseSummaryFactory::extract( Iterator iter ) {
   // noise RMS
   chi2Probab[0] = anal->chi2Probab()[0]; 
   chi2Probab[1] = anal->chi2Probab()[1]; 
-  // noise RMS
-  noiseRMS[0] = anal->noiseRMS()[0]; 
-  noiseRMS[1] = anal->noiseRMS()[1]; 
-  // noise Sigma
-  noiseGaus[0] = anal->noiseSigmaGaus()[0]; 
-  noiseGaus[1] = anal->noiseSigmaGaus()[1]; 
-  // noise Bin 84
-  noiseBin84[0] = anal->noiseBin84()[0]; 
-  noiseBin84[1] = anal->noiseBin84()[1]; 
+  // residual RMS
+  residualRMS[0] = anal->residualRMS()[0]; 
+  residualRMS[1] = anal->residualRMS()[1]; 
+  // residual Sigma
+  residualGaus[0] = anal->residualSigmaGaus()[0]; 
+  residualGaus[1] = anal->residualSigmaGaus()[1]; 
   // noise Significance
   noiseSignificance[0] = anal->noiseSignificance()[0]; 
   noiseSignificance[1] = anal->noiseSignificance()[1]; 
+  // residual mean
+  residualMean[0] = anal->residualMean()[0]; 
+  residualMean[1] = anal->residualMean()[1]; 
   // noise Skweness
   residualSkewness[0] = anal->residualSkewness()[0]; 
   residualSkewness[1] = anal->residualSkewness()[1]; 
@@ -85,6 +86,9 @@ void PedsFullNoiseSummaryFactory::extract( Iterator iter ) {
   // bit to indicate if a strip is bad (1) or not (0)
   badStripBit[0] = anal->badStripBit()[0];
   badStripBit[1] = anal->badStripBit()[1];
+  // bit to indicate if a strip is dead (1) or not (0)
+  badStripBit[0] = anal->badStripBit()[0];
+  deadStripBit[1] = anal->deadStripBit()[1];
 
   bool all_strips = false;
 
@@ -148,23 +152,23 @@ void PedsFullNoiseSummaryFactory::extract( Iterator iter ) {
     }
   }
  
-  else if ( mon_ == sistrip::NOISE_RMS_ALL_STRIPS) {
+  else if ( mon_ == sistrip::RESIDUAL_RMS_ALL_STRIPS) {
     all_strips = true;
-    uint16_t bins = noiseRMS[0].size();
-	if ( noiseRMS[0].size() < noiseRMS[1].size() ) { bins = noiseRMS[1].size(); }
+    uint16_t bins = residualRMS[0].size();
+	if ( residualRMS[0].size() < residualRMS[1].size() ) { bins = residualRMS[1].size(); }
     for ( uint16_t iks = 0; iks < bins; iks++ ) {
-      value[0][iks] = noiseRMS[0][iks];
-      value[1][iks] = noiseRMS[1][iks];     
+      value[0][iks] = residualRMS[0][iks];
+      value[1][iks] = residualRMS[1][iks];     
     }
   } 
 
-  else if ( mon_ == sistrip::NOISE_GAUS_ALL_STRIPS) {
+  else if ( mon_ == sistrip::RESIDUAL_GAUS_ALL_STRIPS) {
     all_strips = true;
-    uint16_t bins = noiseGaus[0].size();
-	if ( noiseGaus[0].size() < noiseGaus[1].size() ) { bins = noiseGaus[1].size(); }
+    uint16_t bins = residualGaus[0].size();
+	if ( residualGaus[0].size() < residualGaus[1].size() ) { bins = residualGaus[1].size(); }
     for ( uint16_t iks = 0; iks < bins; iks++ ) {
-      value[0][iks] = noiseGaus[0][iks];
-      value[1][iks] = noiseGaus[1][iks];     
+      value[0][iks] = residualGaus[0][iks];
+      value[1][iks] = residualGaus[1][iks];     
     }
   } 
 
@@ -178,13 +182,13 @@ void PedsFullNoiseSummaryFactory::extract( Iterator iter ) {
     }
   } 
 
-  else if ( mon_ == sistrip::NOISE_BIN_84_ALL_STRIPS) {
+  else if ( mon_ == sistrip::RESIDUAL_MEAN_ALL_STRIPS) {
     all_strips = true;
-    uint16_t bins = noiseBin84[0].size();
-	if ( noiseBin84[0].size() < noiseBin84[1].size() ) { bins = noiseBin84[1].size(); }
+    uint16_t bins = residualMean[0].size();
+	if ( residualMean[0].size() < residualMean[1].size() ) { bins = residualMean[1].size(); }
     for ( uint16_t iks = 0; iks < bins; iks++ ) {
-      value[0][iks] = noiseBin84[0][iks];
-      value[1][iks] = noiseBin84[1][iks];     
+      value[0][iks] = residualMean[0][iks];
+      value[1][iks] = residualMean[1][iks];     
     }
   } 
 
@@ -235,6 +239,16 @@ void PedsFullNoiseSummaryFactory::extract( Iterator iter ) {
     for ( uint16_t iks = 0; iks < bins; iks++ ) {
       value[0][iks] = 1.*badStripBit[0][iks];
       value[1][iks] = 1.*badStripBit[1][iks];     
+    }
+  } 
+
+  else if ( mon_ == sistrip::DEAD_STRIP_BIT_ALL_STRIPS) {
+    all_strips = true;
+    uint16_t bins = deadStripBit[0].size();
+	if ( deadStripBit[0].size() < deadStripBit[1].size() ) { bins = deadStripBit[1].size(); }
+    for ( uint16_t iks = 0; iks < bins; iks++ ) {
+      value[0][iks] = 1.*deadStripBit[0][iks];
+      value[1][iks] = 1.*deadStripBit[1][iks];     
     }
   } 
   
@@ -409,17 +423,17 @@ void PedsFullNoiseSummaryFactory::format() {
   else if( mon_ == sistrip::CHI2_PROBAB_ALL_STRIPS) {
     generator_->axisLabel("Chi2 p-value" );    
   }
-  else if( mon_ == sistrip::NOISE_RMS_ALL_STRIPS) {
-    generator_->axisLabel("Noise [adc]" );    
+  else if( mon_ == sistrip::RESIDUAL_RMS_ALL_STRIPS) {
+    generator_->axisLabel("Residual RMS [adc]" );    
   }
-  else if( mon_ == sistrip::NOISE_GAUS_ALL_STRIPS) {
-    generator_->axisLabel("Noise Gaus [adc]" );    
+  else if( mon_ == sistrip::RESIDUAL_GAUS_ALL_STRIPS) {
+    generator_->axisLabel("Residual Gaus [adc]" );    
   }
   else if( mon_ == sistrip::NOISE_SIGNIFICANCE_ALL_STRIPS) {
     generator_->axisLabel("Noise Significance" );    
   }
-  else if( mon_ == sistrip::NOISE_BIN_84_ALL_STRIPS) {
-    generator_->axisLabel("Noise Bin 84 [adc]" );    
+  else if( mon_ == sistrip::RESIDUAL_MEAN_ALL_STRIPS) {
+    generator_->axisLabel("Residual Mean [adc]" );    
   }
   else if( mon_ == sistrip::RESIDUAL_SKEWNESS_ALL_STRIPS) {
     generator_->axisLabel("Residual Skewness [adc]" );    
@@ -435,6 +449,9 @@ void PedsFullNoiseSummaryFactory::format() {
   }
   else if( mon_ == sistrip::BAD_STRIP_BIT_ALL_STRIPS) {
     generator_->axisLabel("Bad Strip Bit" );    
+  }
+  else if( mon_ == sistrip::DEAD_STRIP_BIT_ALL_STRIPS) {
+    generator_->axisLabel("Dead Strip Bit" );    
   }
   else if( mon_ == sistrip::NUM_OF_DEAD) {
   }

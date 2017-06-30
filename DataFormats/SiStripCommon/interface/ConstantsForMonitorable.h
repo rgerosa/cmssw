@@ -80,11 +80,11 @@ namespace sistrip {
   static const char pedestalsMin_[]       = "PedestalMin";
 
   // noise
-  static const char noiseAllStrips_[]       = "StripNoise";
-  static const char noiseMean_[]            = "NoiseMean";
-  static const char noiseSpread_[]          = "NoiseRmsSpread";
-  static const char noiseMax_[]             = "NoiseMax";
-  static const char noiseMin_[]             = "NoiseMin";
+  static const char noiseAllStrips_[]     = "StripNoise";
+  static const char noiseMean_[]          = "NoiseMean";
+  static const char noiseSpread_[]        = "NoiseRmsSpread";
+  static const char noiseMax_[]           = "NoiseMax";
+  static const char noiseMin_[]           = "NoiseMin";
 
   static const char numOfDeadStrips_[]        = "NumOfDeadStrips";
   static const char numOfNoisy_[]             = "NumOfNoisyStrips";
@@ -102,14 +102,15 @@ namespace sistrip {
   static const char numOfBadDoublePeakStrips_[]   = "NumOfBadDoublePeakStrips";
 
   static const char badStripBit_[]          = "badStripBit";
+  static const char deadStripBit_[]         = "deadStripBit";
   static const char adProbabAllStrips_[]    = "adProbabStrips";
   static const char ksProbabAllStrips_[]    = "ksProbabStrips";
   static const char jbProbabAllStrips_[]    = "jbProbabStrips";
   static const char chi2ProbabAllStrips_[]  = "chi2ProbabStrips";
-  static const char noiseRMSAllStrips_[]    = "noiseRMSStrips";
-  static const char noiseSigmaGausAllStrips_[]    = "noiseSigmaGausStrips";
+  static const char residualRMSAllStrips_[]       = "residualRMSStrips";
+  static const char residualSigmaGausAllStrips_[] = "residualSigmaGausStrips";
   static const char noiseSignificanceAllStrips_[] = "noiseSignificanceStrips";
-  static const char noiseBin84AllStrips_[]  = "noiseBin84Strips";
+  static const char residualMeanAllStrips_[]      = "residualMeanStrips";
   static const char residualSkewnessAllStrips_[]  = "residualSkewnessStrips";
   static const char residualKurtosisAllStrips_[]  = "residualKurtosisStrips";
   static const char residualIntegralNsigmaAllStrips_[]  = "residualIntegralNsigmaStrips";
@@ -228,18 +229,19 @@ namespace sistrip {
 		     NUM_OF_BAD_DOUBLE_PEAK = 224,
 		     //	
 		     BAD_STRIP_BIT_ALL_STRIPS = 225,
-		     AD_PROBAB_ALL_STRIPS   = 226,
-		     KS_PROBAB_ALL_STRIPS   = 227,
-		     JB_PROBAB_ALL_STRIPS   = 228,
-		     CHI2_PROBAB_ALL_STRIPS = 229,
-		     NOISE_RMS_ALL_STRIPS = 230,
-		     NOISE_GAUS_ALL_STRIPS = 231,
-		     NOISE_SIGNIFICANCE_ALL_STRIPS= 232,
-		     NOISE_BIN_84_ALL_STRIPS = 233,
-		     RESIDUAL_SKEWNESS_ALL_STRIPS = 234,
-		     RESIDUAL_KURTOSIS_ALL_STRIPS = 235,
-		     RESIDUAL_INTEGRALNSIGMA_ALL_STRIPS = 236,
-		     RESIDUAL_INTEGRAL_ALL_STRIPS = 237,
+		     DEAD_STRIP_BIT_ALL_STRIPS = 226,
+		     AD_PROBAB_ALL_STRIPS   = 227,
+		     KS_PROBAB_ALL_STRIPS   = 228,
+		     JB_PROBAB_ALL_STRIPS   = 229,
+		     CHI2_PROBAB_ALL_STRIPS = 230,
+		     RESIDUAL_RMS_ALL_STRIPS = 231,
+		     RESIDUAL_GAUS_ALL_STRIPS = 232,
+		     NOISE_SIGNIFICANCE_ALL_STRIPS= 233,
+		     RESIDUAL_MEAN_ALL_STRIPS = 234,
+		     RESIDUAL_SKEWNESS_ALL_STRIPS = 235,
+		     RESIDUAL_KURTOSIS_ALL_STRIPS = 236,
+		     RESIDUAL_INTEGRALNSIGMA_ALL_STRIPS = 237,
+		     RESIDUAL_INTEGRAL_ALL_STRIPS = 238,
 		     
 		     FINE_DELAY_POS 		= 601,
 		     FINE_DELAY_ERROR 		= 602,

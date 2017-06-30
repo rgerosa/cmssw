@@ -45,10 +45,10 @@ class PedsFullNoiseAnalysis : public CommissioningAnalysis {
     inline const VVFloat& chi2Probab() const;
 
     // Per strip values
-    inline const VVFloat& noiseRMS() const; // RMS
-    inline const VVFloat& noiseSigmaGaus() const; // from gaus fit
+    inline const VVFloat& residualRMS() const; // RMS
+    inline const VVFloat& residualSigmaGaus() const; // from gaus fit
     inline const VVFloat& noiseSignificance() const; // noise significance
-    inline const VVFloat& noiseBin84() const;
+    inline const VVFloat& residualMean() const;
     inline const VVFloat& residualSkewness() const;
     inline const VVFloat& residualKurtosis() const;
     inline const VVFloat& residualIntegralNsigma() const;
@@ -58,6 +58,7 @@ class PedsFullNoiseAnalysis : public CommissioningAnalysis {
     inline const VVInt& deadStrip() const; 
     inline const VVInt& badStrip() const;
     inline const VVInt& badStripBit() const;
+    inline const VVInt& deadStripBit() const;
     inline const VVInt& shiftedStrip() const;
     inline const VVInt& lowNoiseStrip() const;
     inline const VVInt& largeNoiseStrip() const;
@@ -111,10 +112,11 @@ class PedsFullNoiseAnalysis : public CommissioningAnalysis {
     VVFloat ksProbab_;
     VVFloat jbProbab_;
     VVFloat chi2Probab_;
-    VVFloat noiseRMS_;
-    VVFloat noiseSigmaGaus_;
+    VVFloat residualRMS_;
+    VVFloat residualSigmaGaus_;
     VVFloat noiseSignificance_;
     VVFloat noiseBin84_;
+    VVFloat residualMean_;
     VVFloat residualSkewness_;
     VVFloat residualKurtosis_;
     VVFloat residualIntegralNsigma_;
@@ -123,6 +125,7 @@ class PedsFullNoiseAnalysis : public CommissioningAnalysis {
     VVInt deadStrip_;
     VVInt badStrip_;
     VVInt badStripBit_;
+    VVInt deadStripBit_;
     VVInt shiftedStrip_;
     VVInt lowNoiseStrip_;
     VVInt largeNoiseStrip_;
@@ -164,10 +167,10 @@ const PedsFullNoiseAnalysis::VVFloat& PedsFullNoiseAnalysis::ksProbab() const { 
 const PedsFullNoiseAnalysis::VVFloat& PedsFullNoiseAnalysis::jbProbab() const { return jbProbab_;}
 const PedsFullNoiseAnalysis::VVFloat& PedsFullNoiseAnalysis::chi2Probab() const { return chi2Probab_;}
 
-const PedsFullNoiseAnalysis::VVFloat& PedsFullNoiseAnalysis::noiseRMS() const { return noiseRMS_;}
-const PedsFullNoiseAnalysis::VVFloat& PedsFullNoiseAnalysis::noiseSigmaGaus() const { return noiseSigmaGaus_;}
+const PedsFullNoiseAnalysis::VVFloat& PedsFullNoiseAnalysis::residualRMS() const { return residualRMS_;}
+const PedsFullNoiseAnalysis::VVFloat& PedsFullNoiseAnalysis::residualSigmaGaus() const { return residualSigmaGaus_;}
 const PedsFullNoiseAnalysis::VVFloat& PedsFullNoiseAnalysis::noiseSignificance() const { return noiseSignificance_;}
-const PedsFullNoiseAnalysis::VVFloat& PedsFullNoiseAnalysis::noiseBin84() const { return noiseBin84_;}
+const PedsFullNoiseAnalysis::VVFloat& PedsFullNoiseAnalysis::residualMean() const { return residualMean_;}
 const PedsFullNoiseAnalysis::VVFloat& PedsFullNoiseAnalysis::residualSkewness() const { return residualSkewness_;}
 const PedsFullNoiseAnalysis::VVFloat& PedsFullNoiseAnalysis::residualKurtosis() const { return residualKurtosis_;}
 const PedsFullNoiseAnalysis::VVFloat& PedsFullNoiseAnalysis::residualIntegralNsigma() const { return residualIntegralNsigma_;}
@@ -176,6 +179,7 @@ const PedsFullNoiseAnalysis::VVFloat& PedsFullNoiseAnalysis::residualIntegral() 
 const PedsFullNoiseAnalysis::VVInt& PedsFullNoiseAnalysis::deadStrip() const { return deadStrip_;}
 const PedsFullNoiseAnalysis::VVInt& PedsFullNoiseAnalysis::badStrip() const { return badStrip_;}
 const PedsFullNoiseAnalysis::VVInt& PedsFullNoiseAnalysis::badStripBit() const { return badStripBit_;}
+const PedsFullNoiseAnalysis::VVInt& PedsFullNoiseAnalysis::deadStripBit() const { return deadStripBit_;}
 const PedsFullNoiseAnalysis::VVInt& PedsFullNoiseAnalysis::shiftedStrip() const { return shiftedStrip_;}
 const PedsFullNoiseAnalysis::VVInt& PedsFullNoiseAnalysis::lowNoiseStrip() const { return lowNoiseStrip_;}
 const PedsFullNoiseAnalysis::VVInt& PedsFullNoiseAnalysis::largeNoiseStrip() const { return largeNoiseStrip_;}

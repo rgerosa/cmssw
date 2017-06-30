@@ -20,10 +20,10 @@ PedsFullNoiseAnalysis::PedsFullNoiseAnalysis( const uint32_t& key )
     ksProbab_(2,VFloat(128,sistrip::invalid_)),
     jbProbab_(2,VFloat(128,sistrip::invalid_)),
     chi2Probab_(2,VFloat(128,sistrip::invalid_)),
-    noiseRMS_(2,VFloat(128,sistrip::invalid_)),
-    noiseSigmaGaus_(2,VFloat(128,sistrip::invalid_)),
+    residualRMS_(2,VFloat(128,sistrip::invalid_)),
+    residualSigmaGaus_(2,VFloat(128,sistrip::invalid_)),
     noiseSignificance_(2,VFloat(128,sistrip::invalid_)),
-    noiseBin84_(2,VFloat(128,sistrip::invalid_)),
+    residualMean_(2,VFloat(128,sistrip::invalid_)),
     residualSkewness_(2,VFloat(128,sistrip::invalid_)),
     residualKurtosis_(2,VFloat(128,sistrip::invalid_)),
     residualIntegralNsigma_(2,VFloat(128,sistrip::invalid_)),
@@ -31,6 +31,7 @@ PedsFullNoiseAnalysis::PedsFullNoiseAnalysis( const uint32_t& key )
     deadStrip_(2,VInt(0,sistrip::invalid_)),
     badStrip_(2,VInt(0,sistrip::invalid_)),
     badStripBit_(2,VInt(128,sistrip::invalid_)),
+    deadStripBit_(2,VInt(128,sistrip::invalid_)),
     shiftedStrip_(2,VInt(0,sistrip::invalid_)),
     lowNoiseStrip_(2,VInt(0,sistrip::invalid_)),
     largeNoiseStrip_(2,VInt(0,sistrip::invalid_)),
@@ -96,10 +97,10 @@ PedsFullNoiseAnalysis::PedsFullNoiseAnalysis()
     ksProbab_(2,VFloat(128,sistrip::invalid_)),
     jbProbab_(2,VFloat(128,sistrip::invalid_)),
     chi2Probab_(2,VFloat(128,sistrip::invalid_)),
-    noiseRMS_(2,VFloat(128,sistrip::invalid_)),
-    noiseSigmaGaus_(2,VFloat(128,sistrip::invalid_)),
+    residualRMS_(2,VFloat(128,sistrip::invalid_)),
+    residualSigmaGaus_(2,VFloat(128,sistrip::invalid_)),
     noiseSignificance_(2,VFloat(128,sistrip::invalid_)),
-    noiseBin84_(2,VFloat(128,sistrip::invalid_)),
+    residualMean_(2,VFloat(128,sistrip::invalid_)),
     residualSkewness_(2,VFloat(128,sistrip::invalid_)),
     residualKurtosis_(2,VFloat(128,sistrip::invalid_)),
     residualIntegralNsigma_(2,VFloat(128,sistrip::invalid_)),
@@ -107,6 +108,7 @@ PedsFullNoiseAnalysis::PedsFullNoiseAnalysis()
     deadStrip_(2,VInt(0,sistrip::invalid_)),
     badStrip_(2,VInt(0,sistrip::invalid_)),
     badStripBit_(2,VInt(128,sistrip::invalid_)),
+    deadStripBit_(2,VInt(128,sistrip::invalid_)),
     shiftedStrip_(2,VInt(0,sistrip::invalid_)),
     lowNoiseStrip_(2,VInt(0,sistrip::invalid_)),
     largeNoiseStrip_(2,VInt(0,sistrip::invalid_)),
@@ -171,11 +173,11 @@ void PedsFullNoiseAnalysis::reset() {
   adProbab_ = VVFloat(2,VFloat(128,sistrip::invalid_));
   ksProbab_ = VVFloat(2,VFloat(128,sistrip::invalid_));
   jbProbab_ = VVFloat(2,VFloat(128,sistrip::invalid_));
-  chi2Probab_ = VVFloat(2,VFloat(128,sistrip::invalid_));
-  noiseRMS_ = VVFloat(2,VFloat(128,sistrip::invalid_));
-  noiseSigmaGaus_    = VVFloat(2,VFloat(128,sistrip::invalid_));
+  chi2Probab_  = VVFloat(2,VFloat(128,sistrip::invalid_));
+  residualRMS_ = VVFloat(2,VFloat(128,sistrip::invalid_));
+  residualSigmaGaus_ = VVFloat(2,VFloat(128,sistrip::invalid_));
   noiseSignificance_ = VVFloat(2,VFloat(128,sistrip::invalid_));
-  noiseBin84_    = VVFloat(2,VFloat(128,sistrip::invalid_));
+  residualMean_     = VVFloat(2,VFloat(128,sistrip::invalid_));
   residualSkewness_ = VVFloat(2,VFloat(128,sistrip::invalid_));
   residualKurtosis_ = VVFloat(2,VFloat(128,sistrip::invalid_));
   residualIntegralNsigma_ = VVFloat(2,VFloat(128,sistrip::invalid_));
@@ -184,6 +186,7 @@ void PedsFullNoiseAnalysis::reset() {
   deadStrip_     = VVInt(2,VInt(0,sistrip::invalid_)); 
   badStrip_      = VVInt(2,VInt(0,sistrip::invalid_)); 
   badStripBit_   = VVInt(2,VInt(128,sistrip::invalid_)); 
+  deadStripBit_  = VVInt(2,VInt(128,sistrip::invalid_)); 
   shiftedStrip_  = VVInt(2,VInt(0,sistrip::invalid_)); 
   lowNoiseStrip_ = VVInt(2,VInt(0,sistrip::invalid_));  
   largeNoiseStrip_ = VVInt(2,VInt(0,sistrip::invalid_));

@@ -51,10 +51,14 @@ db_client = cms.EDAnalyzer("SiStripCommissioningOfflineDbClient",
         MaxStripNoiseSignificanceCut = cms.double(10), ## if a strip has a noise significance larger than N, mark it as bad
         AdProbabCut   = cms.double(0.002699796063), ## this is 3 sigma quantile selection on the AndersonDarling p-value
         KsProbabCut   = cms.double(0.002699796063), ## this is 3 sigma quantile selection on the Kolmogorov Smirnov p-value
+        GenerateRandomHisto = cms.bool(False), ## random sampling of the gaussian fit or not while computing p-values
         JbProbabCut   = cms.double(0.002699796063), ## this is 3 sigma quantile selection on the jacque-Bera p-value 
         Chi2ProbabCut = cms.double(0.002699796063), ## this is 3 sigma quantile selection on the chi2 p-value (from a Gaussian fit)
         KurtosisCut   = cms.double(2), ## max value of kurtosis to identify strips with long tails
-        IntegralTailCut  = cms.double(0.000000573303), ## this is the integral of the residuals placed at 5 sigma from the residual mean value
+        IntegralNsigma  = cms.int32(5), ## this is expressed in terms of number of gaussian quantiles .. 5 means take the integral 5-sigma from the peak
+        IntegralTailCut = cms.double(0.0005), ## selection on the N-sigma integral
+        AshmanDistance  = cms.double(2), ## to flag double peaked strips
+        AmplitudeDistance = cms.double(0.85), ## to flag double peaked strips
         #### Zero suppression information
         HighThreshold    = cms.double(5),  ## analysis-wide high threshold for the fed zero suppression
         LowThreshold     = cms.double(2),  ## analysis-wide low threshold for the fed zero suppression
