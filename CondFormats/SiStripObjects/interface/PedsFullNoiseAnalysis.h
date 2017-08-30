@@ -32,7 +32,7 @@ class PedsFullNoiseAnalysis : public CommissioningAnalysis {
     
     /** Identifies if analysis is valid or not. */
     bool isValid() const;
-    
+
     // Pedestal, noise and raw noise (128-strip vector per APV)
     inline const VVFloat& peds() const;
     inline const VVFloat& noise() const;
@@ -115,7 +115,6 @@ class PedsFullNoiseAnalysis : public CommissioningAnalysis {
     VVFloat residualRMS_;
     VVFloat residualSigmaGaus_;
     VVFloat noiseSignificance_;
-    VVFloat noiseBin84_;
     VVFloat residualMean_;
     VVFloat residualSkewness_;
     VVFloat residualKurtosis_;

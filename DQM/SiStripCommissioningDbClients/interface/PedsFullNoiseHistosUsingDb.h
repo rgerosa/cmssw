@@ -29,7 +29,7 @@ class PedsFullNoiseHistosUsingDb : public CommissioningHistosUsingDb, public Ped
     bool  disableBadStrips_; // to disable bad strips flagged by the analysis in the upload
     bool  keepStripsDisabled_; // keep bad strips from previous runs as bad
     bool  skipEmptyStrips_;  // skip empty strips i.e. don't flag as bad
-    bool  uploadOnlyStripMaskingBit_;
+    bool  uploadOnlyStripBadChannelBit_;
 };
 
 #endif // DQM_SiStripCommissioningClients_PedsFullNoiseHistosUsingDb_H

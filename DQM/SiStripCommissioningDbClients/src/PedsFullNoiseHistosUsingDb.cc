@@ -18,6 +18,7 @@ PedsFullNoiseHistosUsingDb::PedsFullNoiseHistosUsingDb( const edm::ParameterSet 
     CommissioningHistosUsingDb(db,sistrip::PEDS_FULL_NOISE ),
     PedsFullNoiseHistograms( pset.getParameter<edm::ParameterSet>("PedsFullNoiseParameters"),bei )
 {
+
   LogTrace(mlDqmClient_) 
     << "[PedsFullNoiseHistosUsingDb::" << __func__ << "]"
     << " Constructing object...";
@@ -32,15 +33,15 @@ PedsFullNoiseHistosUsingDb::PedsFullNoiseHistosUsingDb( const edm::ParameterSet 
 
   disableBadStrips_   = this->pset().getParameter<bool>("DisableBadStrips");
   keepStripsDisabled_ = this->pset().getParameter<bool>("KeepStripsDisabled");
-  skipEmptyStrips_    = this->pset().getParameter<bool>("skipEmptyStrips");
-  uploadOnlyStripMaskingBit_ = this->pset().getParameter<bool>("UploadOnlyStripMaskingBit");
+  skipEmptyStrips_    = this->pset().getParameter<bool>("SkipEmptyStrips");
+  uploadOnlyStripBadChannelBit_ = this->pset().getParameter<bool>("UploadOnlyStripBadChannelBit");
   
   LogTrace(mlDqmClient_)
     << "[PedestalsHistosUsingDb::" << __func__ << "]"
     << " Disabling strips: " << disableBadStrips_
     << " ; keeping previously disabled strips: " << keepStripsDisabled_
     << " ; skip strips with no data: " << skipEmptyStrips_
-    << " ; upload only masking bit: " << uploadOnlyStripMaskingBit_;
+    << " ; upload only bad channel bit: " << uploadOnlyStripBadChannelBit_;
     
 }
 
@@ -210,7 +211,7 @@ void PedsFullNoiseHistosUsingDb::update( SiStripConfigDb::FedDescriptionsRange f
 	    uint32_t highThr  = 0;
 	    
 	    // download the previous pedestal/noise payload from the DB
-	    if(uploadOnlyStripMaskingBit_){ 
+	    if(uploadOnlyStripBadChannelBit_){ 
 	      // understand and implement how to download the payload	      
 	      pedestalVal = temp.getPedestal();
 	      noiseVal = temp.getNoise();

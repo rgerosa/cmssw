@@ -25,6 +25,7 @@ CommissioningHistosUsingDb::CommissioningHistosUsingDb( SiStripConfigDb* const d
     uploadAnal_(true),
     uploadConf_(false)
 {
+  
   LogTrace(mlDqmClient_) 
     << "[" << __PRETTY_FUNCTION__ << "]"
     << " Constructing object...";

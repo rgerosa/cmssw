@@ -37,6 +37,9 @@ class PedsFullNoiseAlgorithm : public CommissioningAlgorithm {
   /** Performs histogram anaysis. */
   void analyse();
 
+  /** reset vector */
+  void reset(PedsFullNoiseAnalysis*);     
+
  private:
 
   /** Pedestals and raw noise */

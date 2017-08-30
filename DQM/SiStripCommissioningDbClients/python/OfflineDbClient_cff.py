@@ -39,7 +39,7 @@ db_client = cms.EDAnalyzer("SiStripCommissioningOfflineDbClient",
     LowThreshold        = cms.double(2),    # analysis-wide low threshold for the fed zero suppression
     DisableBadStrips    = cms.bool(False),  # for experts! disables bad strips on the fed level 
     AddBadStrips				= cms.bool(False), #for experts! keep and add disabled bad strips. 
-    KeepsStripsDisabled = cms.bool(False)   # for experts! keep strips disabled as in the db's current state
+    KeepStripsDisabled = cms.bool(False)   # for experts! keep strips disabled as in the db's current state
   ),
   PedsOnlyParameters       = cms.PSet(),
   ### Bad channel analysis                           
@@ -58,7 +58,7 @@ db_client = cms.EDAnalyzer("SiStripCommissioningOfflineDbClient",
         IntegralNsigma  = cms.int32(5), ## this is expressed in terms of number of gaussian quantiles .. 5 means take the integral 5-sigma from the peak
         IntegralTailCut = cms.double(0.0005), ## selection on the N-sigma integral
         AshmanDistance  = cms.double(2), ## to flag double peaked strips
-        AmplitudeDistance = cms.double(0.85), ## to flag double peaked strips
+        AmplitudeRatio  = cms.double(0.85), ## to flag double peaked strips
         #### Zero suppression information
         HighThreshold    = cms.double(5),  ## analysis-wide high threshold for the fed zero suppression
         LowThreshold     = cms.double(2),  ## analysis-wide low threshold for the fed zero suppression
@@ -71,3 +71,4 @@ db_client = cms.EDAnalyzer("SiStripCommissioningOfflineDbClient",
   SamplingParameters       = cms.PSet(),
   VpspScanParameters       = cms.PSet(),
 )
+

@@ -40,8 +40,8 @@ PedsFullNoiseAlgorithm::PedsFullNoiseAlgorithm( const edm::ParameterSet & pset, 
   kurtosisCut_(pset.getParameter<double>("KurtosisCut")),
   integralTailCut_(pset.getParameter<double>("IntegralTailCut")),
   integralNsigma_(pset.getParameter<int>("IntegralNsigma")),
-  ashmanDistance_(pset.getParameter<int>("AshmanDistance")),
-  amplitudeRatio_(pset.getParameter<int>("AmplitudeRatio"))
+  ashmanDistance_(pset.getParameter<double>("AshmanDistance")),
+  amplitudeRatio_(pset.getParameter<double>("AmplitudeRatio"))
 {
   LogDebug(mlCommissioning_)
     << "[PedsFullNoiseAlgorithm::" << __func__ << "]"
@@ -119,6 +119,45 @@ void PedsFullNoiseAlgorithm::extract( const std::vector<TH1*>& histos ) {
   }  
 }
 
+// resetting vectors
+void PedsFullNoiseAlgorithm::reset(PedsFullNoiseAnalysis* ana){
+
+  for(size_t iapv = 0 ; iapv < ana->peds_.size(); iapv++){
+    ana->pedsMean_[iapv] = 0.; 
+    ana->rawMean_[iapv]  = 0.; 
+    ana->noiseMean_[iapv] = 0.;
+    ana->pedsSpread_[iapv] = 0.;
+    ana->noiseSpread_[iapv] = 0.;
+    ana->rawSpread_[iapv] = 0.;
+    ana->pedsMax_[iapv] = 0.;
+    ana->pedsMin_[iapv] = 0.;
+    ana->rawMax_[iapv] = 0.;
+    ana->rawMin_[iapv] = 0.;
+    ana->noiseMax_[iapv] = 0.;
+    ana->noiseMin_[iapv] = 0.;
+
+    for(size_t istrip = 0; istrip < ana->peds_[iapv].size(); istrip++){
+      ana->peds_[iapv][istrip]  = 0.;
+      ana->noise_[iapv][istrip] = 0.;
+      ana->raw_[iapv][istrip]   = 0.;
+      ana->adProbab_[iapv][istrip] = 0.;
+      ana->ksProbab_[iapv][istrip] = 0.;
+      ana->jbProbab_[iapv][istrip] = 0.;
+      ana->chi2Probab_[iapv][istrip] = 0.;
+      ana->residualRMS_[iapv][istrip] = 0.;
+      ana->residualSigmaGaus_[iapv][istrip] = 0.;
+      ana->noiseSignificance_[iapv][istrip] = 0.;
+      ana->residualMean_[iapv][istrip] = 0.;
+      ana->residualSkewness_[iapv][istrip] = 0.;
+      ana->residualKurtosis_[iapv][istrip] = 0.;
+      ana->residualIntegralNsigma_[iapv][istrip] = 0.;
+      ana->residualIntegral_[iapv][istrip] = 0.;      
+      ana->deadStripBit_[iapv][istrip] = 0;
+      ana->badStripBit_[iapv][istrip] = 0;	
+    }
+  }
+}
+
 // -----------------------------------------------------------------------------
 // 
 void PedsFullNoiseAlgorithm::analyse() {
@@ -131,7 +170,7 @@ void PedsFullNoiseAlgorithm::analyse() {
     return; 
   }
   
-  CommissioningAnalysis* tmp = const_cast<CommissioningAnalysis*>( anal() );
+  CommissioningAnalysis* tmp = const_cast<CommissioningAnalysis*>( anal() );  
   PedsFullNoiseAnalysis* ana = dynamic_cast<PedsFullNoiseAnalysis*>( tmp );
 
   // check PedsFullNoiseAnalysis object
@@ -141,6 +180,7 @@ void PedsFullNoiseAlgorithm::analyse() {
       << " NULL pointer to derived Analysis object!";
     return; 
   }
+
 
   // check if the histograms exists 
   if ( !hPeds_.first) {
@@ -197,6 +237,10 @@ void PedsFullNoiseAlgorithm::analyse() {
     return;
   }
 
+  //Reset values
+  reset(ana);
+  
+
   // loop on each strip
   uint32_t apvID = -1;
 
@@ -214,61 +258,65 @@ void PedsFullNoiseAlgorithm::analyse() {
     if(iStrip < histoPeds->GetNbinsX()/2) apvID = 0;
     else apvID = 1;    
     
-    ana->peds_[apvID][iStrip]  = histoPeds->GetBinContent(iStrip+1); // pedestal value
-    ana->noise_[apvID][iStrip] = histoNoiseMean->GetBinContent(iStrip+1); // noise value 
-    ana->raw_[apvID][iStrip]   = histoPeds->GetBinError(iStrip+1); // raw noise value 
-
-    ana->pedsMean_[apvID]  += ana->peds_[apvID][iStrip];  // mean pedestal
-    ana->rawMean_[apvID]   += ana->raw_[apvID][iStrip]; // mean raw noise
-    ana->noiseMean_[apvID] += ana->noise_[apvID][iStrip];  // mean noise
+    int stripBin = 0;
+    if(iStrip >= 128) stripBin = iStrip-128;
+    else stripBin = iStrip;
+      
+    ana->peds_[apvID][stripBin]  = histoPeds->GetBinContent(iStrip+1); // pedestal value
+    ana->noise_[apvID][stripBin] = histoNoiseMean->GetBinContent(iStrip+1); // noise value 
+    ana->raw_[apvID][stripBin]   = histoPeds->GetBinError(iStrip+1); // raw noise value
+ 
+    ana->pedsMean_[apvID]  += ana->peds_[apvID][stripBin];  // mean pedestal
+    ana->rawMean_[apvID]   += ana->raw_[apvID][stripBin]; // mean raw noise
+    ana->noiseMean_[apvID] += ana->noise_[apvID][stripBin];  // mean noise
 
     // max pedestal
     if(ped_max.size() < apvID+1)
-      ped_max.push_back(ana->peds_[apvID][iStrip]);
+      ped_max.push_back(ana->peds_[apvID][stripBin]);
     else{
-      if(ana->peds_[apvID][iStrip] > ped_max.at(apvID))
-	ped_max.at(apvID) = ana->peds_[apvID][iStrip]; 
+      if(ana->peds_[apvID][stripBin] > ped_max.at(apvID))
+	ped_max.at(apvID) = ana->peds_[apvID][stripBin]; 
     }
 
     // min pedestal
     if(ped_min.size() < apvID+1)
-      ped_min.push_back(ana->peds_[apvID][iStrip]);
+      ped_min.push_back(ana->peds_[apvID][stripBin]);
     else{
-      if(ana->peds_[apvID][iStrip] < ped_min.at(apvID))
-	ped_min.at(apvID) = ana->peds_[apvID][iStrip]; // min pedestal
+      if(ana->peds_[apvID][stripBin] < ped_min.at(apvID))
+	ped_min.at(apvID) = ana->peds_[apvID][stripBin]; // min pedestal
     }
 
     // max noise
     if(noise_max.size() < apvID+1)
-      noise_max.push_back(ana->noise_[apvID][iStrip]);
+      noise_max.push_back(ana->noise_[apvID][stripBin]);
     else{
-      if(ana->noise_[apvID][iStrip] > noise_max.at(apvID))
-	noise_max.at(apvID) = ana->noise_[apvID][iStrip]; 
+      if(ana->noise_[apvID][stripBin] > noise_max.at(apvID))
+	noise_max.at(apvID) = ana->noise_[apvID][stripBin]; 
     }
 
     // min noise
     if(noise_min.size() < apvID+1)
-      noise_min.push_back(ana->noise_[apvID][iStrip]);
+      noise_min.push_back(ana->noise_[apvID][stripBin]);
     else{
-      if(ana->noise_[apvID][iStrip] < noise_min.at(apvID))
-	noise_min.at(apvID) = ana->noise_[apvID][iStrip]; 
+      if(ana->noise_[apvID][stripBin] < noise_min.at(apvID))
+	noise_min.at(apvID) = ana->noise_[apvID][stripBin]; 
     }
 
     // max raw
     if(raw_max.size() < apvID+1)
-      raw_max.push_back(ana->raw_[apvID][iStrip]);
+      raw_max.push_back(ana->raw_[apvID][stripBin]);
     else{
-      if(ana->raw_[apvID][iStrip] > raw_max.at(apvID))
-	raw_max.at(apvID) = ana->raw_[apvID][iStrip]; 
+      if(ana->raw_[apvID][stripBin] > raw_max.at(apvID))
+	raw_max.at(apvID) = ana->raw_[apvID][stripBin]; 
     }
 
     // min raw
     if(raw_min.size() < apvID+1)
-      raw_min.push_back(ana->raw_[apvID][iStrip]);
+      raw_min.push_back(ana->raw_[apvID][stripBin]);
     else{
-      if(ana->raw_[apvID][iStrip] < raw_min.at(apvID))
-	raw_min.at(apvID) = ana->raw_[apvID][iStrip]; 
-    }      
+      if(ana->raw_[apvID][stripBin] < raw_min.at(apvID))
+	raw_min.at(apvID) = ana->raw_[apvID][stripBin]; 
+    }          
   }
 
   // Mean values
@@ -280,7 +328,6 @@ void PedsFullNoiseAlgorithm::analyse() {
 
   // Min and Max
   for(unsigned int iApv = 0; iApv < ped_max.size(); iApv++){
-
     if(ped_max.at(iApv) > sistrip::maximum_)
       ana->pedsMax_.at(iApv) = sistrip::maximum_;
     else if(ped_max.at(iApv) < -1.*sistrip::maximum_)
@@ -322,70 +369,69 @@ void PedsFullNoiseAlgorithm::analyse() {
       ana->rawMin_.at(iApv) = -1.*sistrip::maximum_;
     else
       ana->rawMin_.at(iApv) = raw_min.at(iApv);
+
   }
 
   // Calculate the spread for noise and pedestal
   apvID = -1;
-  for(int iStrip = 0; iStrip < histoNoiseMean->GetNbinsX(); iStrip++){
 
+  for(int iStrip = 0; iStrip < histoNoiseMean->GetNbinsX(); iStrip++){
     if(iStrip < histoNoiseMean->GetNbinsX()/2) apvID = 0;
     else apvID = 1;
-
-    ana->pedsSpread_[apvID] += pow(histoPeds->GetBinContent(iStrip+1)-ana->pedsMean_.at(apvID),2);
+    ana->pedsSpread_[apvID]  += pow(histoPeds->GetBinContent(iStrip+1)-ana->pedsMean_.at(apvID),2);
     ana->noiseSpread_[apvID] += pow(histoNoiseMean->GetBinContent(iStrip+1)-ana->noiseMean_.at(apvID),2);
-    ana->rawSpread_[apvID] += pow(histoPeds->GetBinError(iStrip+1)-ana->rawMean_.at(apvID),2);    
+    ana->rawSpread_[apvID]   += pow(histoPeds->GetBinError(iStrip+1)-ana->rawMean_.at(apvID),2);    
   }
 
   for(unsigned int iApv = 0; iApv < ana->pedsSpread_.size(); iApv++){
-    ana->pedsSpread_[apvID] = sqrt(ana->pedsSpread_[apvID])/sqrt(ana->peds_[iApv].size() -1);
-    ana->noiseSpread_[apvID] = sqrt(ana->noiseSpread_[apvID])/sqrt(ana->noise_[iApv].size()-1);
-    ana->rawSpread_[apvID] = sqrt(ana->rawSpread_[apvID])/sqrt(ana->raw_[iApv].size() -1);
+    ana->pedsSpread_[iApv]  = sqrt(ana->pedsSpread_[iApv])/sqrt(ana->peds_[iApv].size() -1);
+    ana->noiseSpread_[iApv] = sqrt(ana->noiseSpread_[iApv])/sqrt(ana->noise_[iApv].size()-1);
+    ana->rawSpread_[iApv]   = sqrt(ana->rawSpread_[iApv])/sqrt(ana->raw_[iApv].size() -1);
   }
-  
-  
+
   // loop on each strip in the lldChannel
   apvID = 0;
   TH1S* histoResidualStrip = new TH1S("histoResidualStrip","",histoNoise->GetNbinsX(),histoNoise->GetXaxis()->GetXmin(),histoNoise->GetXaxis()->GetXmax());
   histoResidualStrip->Sumw2();
   histoResidualStrip->SetDirectory(0);
-  TF1* fitFunc = new TF1 ("fitFunc","gaus(0)",histoNoise->GetXaxis()->GetXmin(),histoNoise->GetXaxis()->GetXmax());
-
+  TF1* fitFunc   = new TF1 ("fitFunc","gaus(0)",histoNoise->GetXaxis()->GetXmin(),histoNoise->GetXaxis()->GetXmax());
   TF1* fit2Gaus  = NULL;
   TH1F* randomHisto = NULL;
   TFitResultPtr result;
 
-  for(int iStrip = 0; iStrip < histoResidualStrip->GetNbinsY(); iStrip++){
-
+  for(int iStrip = 0; iStrip < histoNoise->GetNbinsY(); iStrip++){
     // tell which APV
-    if(iStrip < histoResidualStrip->GetNbinsY()/2) apvID = 0;
+    if(iStrip < histoNoise->GetNbinsY()/2) apvID = 0;
     else apvID = 1;
-
     histoResidualStrip->Reset();
 
-    for(int iBinX = 0; iBinX < histoResidualStrip->GetNbinsX(); iBinX++){
-      histoResidualStrip->SetBinContent(iBinX+1,histoResidualStrip->GetBinContent(iBinX+1,iStrip+1));
-      histoResidualStrip->SetBinError(iBinX+1,histoResidualStrip->GetBinError(iBinX+1,iStrip+1));    
+    int stripBin = 0;
+    if(iStrip >= 128) stripBin = iStrip-128;
+    else stripBin = iStrip;
+
+    for(int iBinX = 0; iBinX < histoNoise->GetNbinsX(); iBinX++){
+      histoResidualStrip->SetBinContent(iBinX+1,histoNoise->GetBinContent(iBinX+1,iStrip+1));
+      histoResidualStrip->SetBinError(iBinX+1,histoNoise->GetBinError(iBinX+1,iStrip+1));    
     }
-
+    
     if(histoResidualStrip->Integral() == 0){ // dead strip --> i.e. no data
-
+      
       // set default values
-      ana->adProbab_[apvID][iStrip] = 0;
-      ana->ksProbab_[apvID][iStrip] = 0;
-      ana->jbProbab_[apvID][iStrip] = 0;
-      ana->chi2Probab_[apvID][iStrip] = 0; 
-      ana->noiseSignificance_[apvID][iStrip] = 0;
-      ana->residualMean_[apvID][iStrip] = 0;
-      ana->residualRMS_[apvID][iStrip] = 0;
-      ana->residualSigmaGaus_[apvID][iStrip] = 0;
-      ana->residualSkewness_[apvID][iStrip] = 0;
-      ana->residualKurtosis_[apvID][iStrip] = 0;
-      ana->residualIntegralNsigma_[apvID][iStrip] = 0;
-      ana->residualIntegral_[apvID][iStrip] = 0;
-
-      ana->deadStrip_[apvID].push_back(iStrip);      
-      ana->deadStripBit_[apvID][iStrip] = 1;
-      ana->badStripBit_[apvID][iStrip] = 0;
+      ana->adProbab_[apvID][stripBin] = 0;
+      ana->ksProbab_[apvID][stripBin] = 0;
+      ana->jbProbab_[apvID][stripBin] = 0;
+      ana->chi2Probab_[apvID][stripBin] = 0; 
+      ana->noiseSignificance_[apvID][stripBin] = 0;
+      ana->residualMean_[apvID][stripBin] = 0;
+      ana->residualRMS_[apvID][stripBin] = 0;
+      ana->residualSigmaGaus_[apvID][stripBin] = 0;
+      ana->residualSkewness_[apvID][stripBin] = 0;
+      ana->residualKurtosis_[apvID][stripBin] = 0;
+      ana->residualIntegralNsigma_[apvID][stripBin] = 0;
+      ana->residualIntegral_[apvID][stripBin] = 0;
+      ana->deadStrip_[apvID].push_back(stripBin);      
+      ana->deadStripBit_[apvID][stripBin] = 1;
+      ana->badStripBit_[apvID][stripBin] = 0;
 
       SiStripFecKey fec_key(ana->fecKey());
       LogTrace(mlDqmClient_)<<"DeadStrip: fecCrate "
@@ -398,113 +444,124 @@ void PedsFullNoiseAlgorithm::analyse() {
 			    <<" apvID "<<apvID
 			    <<" stripID "<<iStrip;
       
-  
+
       continue;
     }
-
+    
     // set / calculated basic quantities
-    ana->residualMean_[apvID][iStrip] = histoResidualStrip->GetMean();
-    ana->residualRMS_[apvID][iStrip] = histoResidualStrip->GetRMS();
-    ana->residualSkewness_[apvID][iStrip] = histoResidualStrip->GetSkewness();
-    ana->residualKurtosis_[apvID][iStrip] = histoResidualStrip->GetKurtosis();
-    ana->noiseSignificance_[apvID][iStrip] = (ana->noise_[apvID][iStrip]-ana->noiseMean_[apvID])/ana->noiseSpread_[apvID];
-    ana->residualIntegral_[apvID][iStrip] = histoResidualStrip->Integral();
-    ana->residualIntegralNsigma_[apvID][iStrip] = 
-      (histoResidualStrip->Integral(histoResidualStrip->FindBin(ana->residualMean_[apvID][iStrip]+ana->residualRMS_[apvID][iStrip]*integralNsigma_),histoResidualStrip->GetNbinsX()+1) + 
-       histoResidualStrip->Integral(0,histoResidualStrip->FindBin(ana->residualMean_[apvID][iStrip]-ana->residualRMS_[apvID][iStrip]*integralNsigma_)))/ana->residualIntegral_[apvID][iStrip];
+    ana->residualMean_[apvID][stripBin]      = histoResidualStrip->GetMean();
+    ana->residualRMS_[apvID][stripBin]       = histoResidualStrip->GetRMS();
+    ana->residualSkewness_[apvID][stripBin]  = histoResidualStrip->GetSkewness();
+    ana->residualKurtosis_[apvID][stripBin]  = histoResidualStrip->GetKurtosis();
+    ana->noiseSignificance_[apvID][stripBin] = (ana->noise_[apvID][stripBin]-ana->noiseMean_[apvID])/ana->noiseSpread_[apvID];
+    ana->residualIntegral_[apvID][stripBin]  = histoResidualStrip->Integral();
+    ana->residualIntegralNsigma_[apvID][stripBin] = 
+      (histoResidualStrip->Integral(histoResidualStrip->FindBin(ana->residualMean_[apvID][stripBin]+ana->residualRMS_[apvID][stripBin]*integralNsigma_),histoResidualStrip->GetNbinsX()+1) + 
+       histoResidualStrip->Integral(0,histoResidualStrip->FindBin(ana->residualMean_[apvID][stripBin]-ana->residualRMS_[apvID][stripBin]*integralNsigma_)))/ana->residualIntegral_[apvID][stripBin];
 
     // performing a Gaussian fit of the residual distribution
     fitFunc->SetRange(histoNoise->GetXaxis()->GetXmin(),histoNoise->GetXaxis()->GetXmax());
-    fitFunc->SetParameters(ana->residualIntegral_[apvID][iStrip],ana->residualMean_[apvID][iStrip],ana->residualRMS_[apvID][iStrip]);
+    fitFunc->SetParameters(ana->residualIntegral_[apvID][stripBin],ana->residualMean_[apvID][stripBin],ana->residualRMS_[apvID][stripBin]);
     result = histoResidualStrip->Fit(fitFunc,"QSRN");
-    
+
+    // Good gaussian fit
     if(result.Get()){
 
-      ana->residualSigmaGaus_[apvID][iStrip] = fitFunc->GetParameter(2);
-      ana->chi2Probab_[apvID][iStrip] = result->Prob();
-
+      ana->residualSigmaGaus_[apvID][stripBin] = fitFunc->GetParameter(2);
+      ana->chi2Probab_[apvID][stripBin]        = result->Prob();
+      
       // jacque bera probability
-      float jbVal = (ana->residualIntegral_[apvID][iStrip]/6)*(pow(ana->residualSkewness_[apvID][iStrip],2)+pow(ana->residualKurtosis_[apvID][iStrip],2)/4);
-      ana->jbProbab_[apvID][iStrip] = ROOT::Math::chisquared_cdf_c(jbVal,2);
+      float jbVal = (ana->residualIntegral_[apvID][stripBin]/6)*(pow(ana->residualSkewness_[apvID][stripBin],2)+pow(ana->residualKurtosis_[apvID][stripBin],2)/4);
+      ana->jbProbab_[apvID][stripBin] = ROOT::Math::chisquared_cdf_c(jbVal,2);
 
+      
       //Kolmogorov Smirnov and Anderson Darlong
       if(randomHisto == 0 or randomHisto == NULL)
 	randomHisto = (TH1F*) histoResidualStrip->Clone("randomHisto");
       randomHisto->Reset();
       randomHisto->SetDirectory(0);
       
-      if(generateRandomHisto_){
-
+      if(generateRandomHisto_){///
 	randomHisto->FillRandom("fitFunc",histoResidualStrip->Integral());
-
-	ana->ksProbab_[apvID][iStrip] = histoResidualStrip->KolmogorovTest(randomHisto,"N");
-	ana->adProbab_[apvID][iStrip] = histoResidualStrip->AndersonDarlingTest(randomHisto);
+	if(randomHisto->Integral() != 0){
+	  ana->ksProbab_[apvID][stripBin] = histoResidualStrip->KolmogorovTest(randomHisto,"N");
+	  ana->adProbab_[apvID][stripBin] = histoResidualStrip->AndersonDarlingTest(randomHisto);
+	}
+	else{
+	  ana->ksProbab_[apvID][stripBin] = 0;
+	  ana->adProbab_[apvID][stripBin] = 0;
+	}
+	    
       }
       else{
 	randomHisto->Add(fitFunc);
-	ana->ksProbab_[apvID][iStrip] = histoResidualStrip->KolmogorovTest(randomHisto,"N");
-
-	ROOT::Fit::BinData data1;
-	ROOT::Fit::BinData data2;
-	ROOT::Fit::FillData(data1,randomHisto,0);
-	data2.Initialize(randomHisto->GetNbinsX()+1,1);
-	for(int ibin = 0; ibin < randomHisto->GetNbinsX(); ibin++){ 
-	  if(histoResidualStrip->GetBinContent(ibin+1) != 0 or randomHisto->GetBinContent(ibin+1) >= 1)
-	    data2.Add(randomHisto->GetBinCenter(ibin+1),randomHisto->GetBinContent(ibin+1),randomHisto->GetBinError(ibin+1));
+	if(randomHisto->Integral() != 0){
+	  ana->ksProbab_[apvID][stripBin] = histoResidualStrip->KolmogorovTest(randomHisto,"N");
+	  ROOT::Fit::BinData data1;
+	  ROOT::Fit::BinData data2;
+	  ROOT::Fit::FillData(data1,histoResidualStrip,0);
+	  data2.Initialize(randomHisto->GetNbinsX()+1,1);
+	  for(int ibin = 0; ibin < randomHisto->GetNbinsX(); ibin++){ 
+	    if(histoResidualStrip->GetBinContent(ibin+1) != 0 or randomHisto->GetBinContent(ibin+1) >= 1)
+	      data2.Add(randomHisto->GetBinCenter(ibin+1),randomHisto->GetBinContent(ibin+1),randomHisto->GetBinError(ibin+1));
+	  }
+	  
+	  double probab, value;
+	  ROOT::Math::GoFTest::AndersonDarling2SamplesTest(data1,data2,probab,value);
+	  ana->adProbab_[apvID][stripBin] = probab;
 	}
-
-	double probab, value;
-	ROOT::Math::GoFTest::AndersonDarling2SamplesTest(data1,data2,probab,value);
-	ana->adProbab_[apvID][iStrip] = probab;
-      }    
+	else{
+	  ana->ksProbab_[apvID][stripBin] = 0;
+	  ana->adProbab_[apvID][stripBin] = 0;
+	}
+      }
     }
-
+  
     // start applying selections storing output
     bool badStripFlag =  false;
+    ana->deadStripBit_[apvID][stripBin] = 0; // is not dead if the strip has data
 
-    ana->deadStripBit_[apvID][iStrip] = 0; // is not dead if the strip has data
-
-    if(fabs(ana->residualMean_[apvID][iStrip]) > maxDriftResidualCut_ and not badStripFlag) {//mean value
-      ana->shiftedStrip_[apvID].push_back(iStrip);
+    if(fabs(ana->residualMean_[apvID][stripBin]) > maxDriftResidualCut_ and not badStripFlag) {//mean value
+      ana->shiftedStrip_[apvID].push_back(stripBin);
       badStripFlag = true;
     }
     
-    if(ana->residualRMS_[apvID][iStrip] < minStripNoiseCut_ and not badStripFlag){ // low noise
-      ana->lowNoiseStrip_[apvID].push_back(iStrip);
+    if(ana->residualRMS_[apvID][stripBin] < minStripNoiseCut_ and not badStripFlag){ // low noise
+      ana->lowNoiseStrip_[apvID].push_back(stripBin);
       badStripFlag  = true;
     }
 
-    if(ana->residualRMS_[apvID][iStrip] > maxStripNoiseCut_ and not badStripFlag){ // large noise
-      ana->largeNoiseStrip_[apvID].push_back(iStrip);
+    if(ana->residualRMS_[apvID][stripBin] > maxStripNoiseCut_ and not badStripFlag){ // large noise
+      ana->largeNoiseStrip_[apvID].push_back(stripBin);
       badStripFlag = true;
     }
 
-    if(fabs(ana->noiseSignificance_[apvID][iStrip]) > maxStripNoiseSignificanceCut_ and not badStripFlag){ // large noise significance
-      ana->largeNoiseSignificance_[apvID].push_back(iStrip);      
+    if(fabs(ana->noiseSignificance_[apvID][stripBin]) > maxStripNoiseSignificanceCut_ and not badStripFlag){ // large noise significance
+      ana->largeNoiseSignificance_[apvID].push_back(stripBin);      
       badStripFlag = true;
     }
     
     if(result.Get() and result->Status() != 0) // bad fit status
-      ana->badFitStatus_[apvID].push_back(iStrip);
+      ana->badFitStatus_[apvID].push_back(stripBin);
 
-    if(ana->adProbab_[apvID][iStrip] < adProbabCut_ and not badStripFlag) // bad AD p-value
-      ana->badADProbab_[apvID].push_back(iStrip);
+    if(ana->adProbab_[apvID][stripBin] < adProbabCut_ and not badStripFlag) // bad AD p-value --> store the strip-id
+      ana->badADProbab_[apvID].push_back(stripBin);
 
-    if(ana->ksProbab_[apvID][iStrip] < ksProbabCut_ and not badStripFlag) // bad KS p-value
-      ana->badKSProbab_[apvID].push_back(iStrip);
+    if(ana->ksProbab_[apvID][stripBin] < ksProbabCut_ and not badStripFlag) // bad KS p-value --> store the strip-id 
+      ana->badKSProbab_[apvID].push_back(stripBin);
 
-    if(ana->jbProbab_[apvID][iStrip] < jbProbabCut_ and not badStripFlag) // bad JB p-value
-      ana->badJBProbab_[apvID].push_back(iStrip);
+    if(ana->jbProbab_[apvID][stripBin] < jbProbabCut_ and not badStripFlag) // bad JB p-value  --> store the strip-id 
+      ana->badJBProbab_[apvID].push_back(stripBin);
 
-    if(ana->chi2Probab_[apvID][iStrip] < chi2ProbabCut_ and not badStripFlag) // bad CHI2 p-value
-      ana->badChi2Probab_[apvID].push_back(iStrip);
+    if(ana->chi2Probab_[apvID][stripBin] < chi2ProbabCut_ and not badStripFlag) // bad CHI2 p-value  --> store the strip-id 
+      ana->badChi2Probab_[apvID].push_back(stripBin);
 
-    if(ana->adProbab_[apvID][iStrip] < adProbabCut_ and ana->ksProbab_[apvID][iStrip] < ksProbabCut_ and 
-       ana->jbProbab_[apvID][iStrip] < jbProbabCut_ and ana->chi2Probab_[apvID][iStrip] < chi2ProbabCut_)
-      badStripFlag = true;
+    if(ana->adProbab_[apvID][stripBin] < adProbabCut_ and ana->ksProbab_[apvID][stripBin] < ksProbabCut_ and   
+       ana->jbProbab_[apvID][stripBin] < jbProbabCut_ and ana->chi2Probab_[apvID][stripBin] < chi2ProbabCut_)
+      badStripFlag = true; // bad strip is flagged as bad by all the methods
 
-    if(ana->residualKurtosis_[apvID][iStrip] > kurtosisCut_ and ana->residualIntegralNsigma_[apvID][iStrip] > integralTailCut_ and not badStripFlag){ // bad tails      
-      ana->badChi2Probab_[apvID].push_back(iStrip);
+    if(ana->residualKurtosis_[apvID][stripBin] > kurtosisCut_ and ana->residualIntegralNsigma_[apvID][stripBin] > integralTailCut_ and not badStripFlag){ // bad tails      
+      ana->badTailStrip_[apvID].push_back(stripBin);
       badStripFlag = true;
     }
 
@@ -520,18 +577,20 @@ void PedsFullNoiseAlgorithm::analyse() {
       fit2Gaus->SetParLimits(1,0.,histoNoise->GetXaxis()->GetXmax());
       fit2Gaus->SetParLimits(4,histoNoise->GetXaxis()->GetXmin(),0);
       result = histoResidualStrip->Fit(fit2Gaus,"QSR");
+
       // ashman distance
       float ashman = TMath::Power(2,0.5)*abs(fit2Gaus->GetParameter(1)-fit2Gaus->GetParameter(4))/(sqrt(pow(fit2Gaus->GetParameter(2),2)+pow(fit2Gaus->GetParameter(5),2))); 
       // amplitude
       float amplitudeRatio = std::min(fit2Gaus->GetParameter(0),fit2Gaus->GetParameter(3))/std::max(fit2Gaus->GetParameter(0),fit2Gaus->GetParameter(3));
       
       if(ashman > ashmanDistance_ and amplitudeRatio > amplitudeRatio_)
-	ana->badDoublePeakStrip_[apvID].push_back(iStrip);      
+	ana->badDoublePeakStrip_[apvID].push_back(stripBin);      
     }
     
     if(badStripFlag){ // save the final bit
-      ana->badStrip_[apvID].push_back(iStrip);
-      ana->badStripBit_[apvID][iStrip] = 1;
+
+      ana->badStrip_[apvID].push_back(stripBin);
+      ana->badStripBit_[apvID][stripBin] = 1;
       
       SiStripFecKey fec_key(ana->fecKey());
       LogTrace(mlDqmClient_)<<"BadStrip: fecCrate "
@@ -542,14 +601,14 @@ void PedsFullNoiseAlgorithm::analyse() {
 			    <<" ccChan  "<<fec_key.ccuChan()                                                                                                                                        
 			    <<" lldChan "<<fec_key.lldChan()                                                                                                                                  
 			    <<" apvID "<<apvID
-			    <<" stripID "<<iStrip;
+			    <<" stripID "<<stripBin;
       
 
     }
     else
-      ana->badStripBit_[apvID][iStrip] = 0;
+      ana->badStripBit_[apvID][stripBin] = 0;    
   }
-
+  
   ped_max.clear();
   ped_min.clear();
   raw_max.clear();
@@ -560,5 +619,5 @@ void PedsFullNoiseAlgorithm::analyse() {
   if(fitFunc) delete fitFunc;
   if(randomHisto) delete randomHisto;
   if(fit2Gaus) delete fit2Gaus;
-
+ 
 }

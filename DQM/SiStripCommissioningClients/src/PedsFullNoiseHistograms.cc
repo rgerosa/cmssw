@@ -21,6 +21,7 @@ PedsFullNoiseHistograms::PedsFullNoiseHistograms( const edm::ParameterSet& pset,
                              bei,
                              sistrip::PEDS_FULL_NOISE )
 {
+
   factory_ = auto_ptr<PedsFullNoiseSummaryFactory>( new PedsFullNoiseSummaryFactory );
   LogTrace(mlDqmClient_) 
     << "[PedsFullNoiseHistograms::" << __func__ << "]"
@@ -38,6 +39,7 @@ PedsFullNoiseHistograms::~PedsFullNoiseHistograms() {
 // -----------------------------------------------------------------------------	 
 /** */	 
 void PedsFullNoiseHistograms::histoAnalysis( bool debug ) {
+  
   LogTrace(mlDqmClient_)
     << "[PedsFullNoiseHistograms::" << __func__ << "]";
 
@@ -52,11 +54,17 @@ void PedsFullNoiseHistograms::histoAnalysis( bool debug ) {
     if ( ianal->second ) { delete ianal->second; }
   } 
   data().clear();
-  
+
   // Iterate through map containing histograms
+  long int total = histos().size();
+  long int iChannel = 0;
   for ( iter = histos().begin(); 
 	iter != histos().end(); iter++ ) {
-    
+
+    std::cout.flush();
+    if(iChannel %10 == 0) std::cout<<"\r"<<"PedsFullNoiseHistograms::histoAnalysis: strip analyzed "<<100*double(iChannel)/(total)<<" % ";
+    iChannel++;
+
     // Check vector of histos is not empty
     if ( iter->second.empty() ) {
       edm::LogWarning(mlDqmClient_) 
@@ -72,23 +80,27 @@ void PedsFullNoiseHistograms::histoAnalysis( bool debug ) {
     for ( ; ihis != iter->second.end(); ihis++ ) {
       // pedestal and noise 1D profiles
       TProfile* prof = ExtractTObject<TProfile>().extract( (*ihis)->me_ );
-      if ( prof ) { hists.push_back(prof); }
+      if ( prof ) { hists.push_back(prof);
+      }
       // 2D noise histograms
       TH2S * his2D = ExtractTObject<TH2S>().extract( (*ihis)->me_ );
-      if ( his2D ) { hists.push_back(his2D); }
+      if ( his2D ) { 
+	hists.push_back(his2D); }
     }
-    
+
     // Perform histo analysis
     PedsFullNoiseAnalysis * anal = new PedsFullNoiseAnalysis( iter->first );
-    PedsFullNoiseAlgorithm algo( this->pset(), anal );
+    PedsFullNoiseAlgorithm algo( this->pset(), anal );    
     algo.analysis( hists );
+
     data()[iter->first] = anal; 
     if (anal->isValid() ) { valid++; }
     if (!anal->getErrorCodes().empty() ) { 
       errors[anal->getErrorCodes()[0]]++;
-    }    
+    } 
+    
   }
-  
+
   if ( !histos().empty() ) {
     edm::LogVerbatim(mlDqmClient_) 
       << "[PedsFullNoiseHistograms::" << __func__ << "]"
@@ -116,8 +128,9 @@ void PedsFullNoiseHistograms::histoAnalysis( bool debug ) {
       << "[PedsFullNoiseHistograms::" << __func__ << "]"
       << " No histograms to analyze!";
   }  
+   
 }
-
+  
 // -----------------------------------------------------------------------------	 
 /** */	 
 void PedsFullNoiseHistograms::printAnalyses() {

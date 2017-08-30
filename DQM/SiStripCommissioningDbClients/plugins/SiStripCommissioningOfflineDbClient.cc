@@ -28,6 +28,7 @@ SiStripCommissioningOfflineDbClient::SiStripCommissioningOfflineDbClient( const 
     uploadAnal_( pset.getUntrackedParameter<bool>("UploadAnalyses",false) ),
     uploadConf_( pset.getUntrackedParameter<bool>("UploadHwConfig",false) )
 {
+
   LogTrace(mlDqmClient_)
     << "[SiStripCommissioningOfflineDbClient::" << __func__ << "]"
     << " Constructing object...";
@@ -92,6 +93,7 @@ void SiStripCommissioningOfflineDbClient::createHistos( const edm::ParameterSet&
       << " Aborting...";
     return;
   } 
+
   
   // Create corresponding "commissioning histograms" object 
   if      ( runType_ == sistrip::FAST_CABLING ) { histos_ = new FastFedCablingHistosUsingDb( pset, bei_, db ); }
@@ -122,6 +124,7 @@ void SiStripCommissioningOfflineDbClient::createHistos( const edm::ParameterSet&
       << " Unknown run type!";
     return;
   }
+  
   histos_->configure(pset,setup);
 
   CommissioningHistosUsingDb* tmp = dynamic_cast<CommissioningHistosUsingDb*>(histos_);
@@ -142,8 +145,8 @@ void SiStripCommissioningOfflineDbClient::createHistos( const edm::ParameterSet&
     edm::LogError(mlDqmClient_) 
       << "[SiStripCommissioningOfflineDbClient::" << __func__ << "]"
       << " NULL pointer to CommissioningHistosUsingDb!";
-  }
-
+  } 
+   
 }
 
 // -----------------------------------------------------------------------------
