@@ -473,7 +473,6 @@ void PedsFullNoiseAlgorithm::analyse() {
       // jacque bera probability
       float jbVal = (ana->residualIntegral_[apvID][stripBin]/6)*(pow(ana->residualSkewness_[apvID][stripBin],2)+pow(ana->residualKurtosis_[apvID][stripBin],2)/4);
       ana->jbProbab_[apvID][stripBin] = ROOT::Math::chisquared_cdf_c(jbVal,2);
-
       
       //Kolmogorov Smirnov and Anderson Darlong
       if(randomHisto == 0 or randomHisto == NULL)
