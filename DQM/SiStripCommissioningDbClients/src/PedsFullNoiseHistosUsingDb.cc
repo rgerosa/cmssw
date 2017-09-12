@@ -99,7 +99,7 @@ void PedsFullNoiseHistosUsingDb::update( SiStripConfigDb::FedDescriptionsRange f
   uint16_t updated = 0;
   SiStripConfigDb::FedDescriptionsV::const_iterator ifed;
 
-  for ( ifed = feds.begin(); ifed != feds.end(); ifed++ ) {    
+  for ( ifed = feds.begin(); ifed != feds.end(); ifed++ ) { // Loop on the FED for this partition
 
     for ( uint16_t ichan = 0; ichan < sistrip::FEDCH_PER_FED; ichan++ ) {
       // Build FED and FEC keys from the cabling object i.e. checking if there is a connection
@@ -189,16 +189,18 @@ void PedsFullNoiseHistosUsingDb::update( SiStripConfigDb::FedDescriptionsRange f
                 }
 		
               	PedsFullNoiseAnalysis::VInt badcChan = anal->badStrip()[iapv]; // new feature --> this is the sample of the whole bad strips from the analysis
-              	if ( find( badcChan.begin(), badcChan.end(), istr ) != badcChan.end() ) {
-		  disableStrip = true;
-                  ss_disable<<"Disabling Bad strip: "<<conn.fecCrate()
-			    <<" "<<conn.fecSlot()
-			    <<" "<<conn.fecRing()
-			    <<" "<<conn.ccuAddr()
-			    <<" "<<conn.ccuChan()
-			    <<" "<<conn.lldChannel()
-			    <<" "<<iapv*128+istr<<std::endl;
-                }
+		if(not disableStrip){
+		  if ( find( badcChan.begin(), badcChan.end(), istr ) != badcChan.end() ) {
+		    disableStrip = true;
+		    ss_disable<<"Disabling Bad strip: "<<conn.fecCrate()
+			      <<" "<<conn.fecSlot()
+			      <<" "<<conn.fecRing()
+			      <<" "<<conn.ccuAddr()
+			      <<" "<<conn.ccuChan()
+			      <<" "<<conn.lldChannel()
+			      <<" "<<iapv*128+istr<<std::endl;
+		  }
+		}
               }
             }
 
@@ -212,20 +214,19 @@ void PedsFullNoiseHistosUsingDb::update( SiStripConfigDb::FedDescriptionsRange f
 	    
 	    // download the previous pedestal/noise payload from the DB
 	    if(uploadOnlyStripBadChannelBit_){ 
-	      // understand and implement how to download the payload	      
 	      pedestalVal = temp.getPedestal();
-	      noiseVal = temp.getNoise();
-	      lowThr   = temp.getLowThreshold();
-	      highThr  = temp.getHighThreshold();
+	      noiseVal    = temp.getNoise();
+	      lowThr      = temp.getLowThreshold();
+	      highThr     = temp.getHighThreshold();
 	    }
 	    else{	      
 	      pedestalVal = static_cast<uint32_t>( anal->peds()[iapv][istr]-pedshift );
-	      noiseVal = static_cast<uint32_t>(anal->noise()[iapv][istr]);
-	      lowThr   = lowThreshold_;
-	      highThr  = highThreshold_;
+	      noiseVal    = static_cast<uint32_t>(anal->noise()[iapv][istr]);
+	      lowThr      = lowThreshold_;
+	      highThr     = highThreshold_;
 	    }
 	    
-	    
+	    //////
             Fed9U::Fed9UStripDescription data(pedestalVal,highThr,lowThr,noiseVal,disableStrip);
 
             std::stringstream ss;
@@ -250,7 +251,9 @@ void PedsFullNoiseHistosUsingDb::update( SiStripConfigDb::FedDescriptionsRange f
                  << static_cast<uint16_t>( temp.getNoise() ) << "/" 
                  << static_cast<uint16_t>( temp.getDisable() ) << std::endl;
             }
+
             (*ifed)->getFedStrips().setStrip( addr, data );
+
             if ( data.getDisable() && edm::isDebugEnabled() ) {
               ss << " to ped/noise/high/low/disable    : "
                  << static_cast<uint16_t>( data.getPedestal() ) << "/" 
@@ -304,67 +307,64 @@ void PedsFullNoiseHistosUsingDb::create( SiStripConfigDb::AnalysisDescriptionsV&
   
   for ( uint16_t iapv = 0; iapv < 2; ++iapv ) {
     // Create description
-    PedestalsAnalysisDescription* tmp = NULL;
-  
-    tmp = new PedestalsAnalysisDescription(
-					   //// Bad flags for the analysis summary
-					   anal->deadStrip()[iapv],
-					   anal->badStrip()[iapv],
-					   anal->shiftedStrip()[iapv],
-					   anal->lowNoiseStrip()[iapv],
-					   anal->largeNoiseStrip()[iapv],
-					   anal->largeNoiseSignificance()[iapv],
-					   anal->badFitStatus()[iapv],
-					   anal->badADProbab()[iapv],
-					   anal->badKSProbab()[iapv],
-					   anal->badJBProbab()[iapv],
-					   anal->badChi2Probab()[iapv],
-					   anal->badTailStrip()[iapv],
-					   anal->badDoublePeakStrip()[iapv],					   
-					   ///// Per APV quantities
-					   anal->pedsMean()[iapv],
-					   anal->pedsSpread()[iapv],
-					   anal->noiseMean()[iapv],
-					   anal->noiseSpread()[iapv],
-					   anal->rawMean()[iapv],
-					   anal->rawSpread()[iapv],
-					   anal->pedsMax()[iapv], 
-					   anal->pedsMin()[iapv], 
-					   anal->noiseMax()[iapv],
-					   anal->noiseMin()[iapv],
-					   anal->rawMax()[iapv],
-					   anal->rawMin()[iapv],
-					   ///// --> test statistic values
-					   anal->adProbab()[iapv],
-					   anal->ksProbab()[iapv],
-					   anal->jbProbab()[iapv],
-					   anal->chi2Probab()[iapv],
-					   //// --> Per strip quantities
-					   anal->noiseRMS()[iapv],
-					   anal->noiseSigmaGaus()[iapv],
-					   anal->noiseSignificance()[iapv],
-					   anal->noiseBin84()[iapv],
-					   anal->residualSkewness()[iapv],
-					   anal->residualKurtosis()[iapv],
-					   anal->residualIntegralNsigma()[iapv],
-					   anal->residualIntegral()[iapv],
-					   ///// coordinates
-					   fec_key.fecCrate(),
-					   fec_key.fecSlot(),
-					   fec_key.fecRing(),
-					   fec_key.ccuAddr(),
-					   fec_key.ccuChan(),
-					   SiStripFecKey::i2cAddr( fec_key.lldChan(), !iapv ), 
-					   db()->dbParams().partitions().begin()->second.partitionName(),
-					   db()->dbParams().partitions().begin()->second.runNumber(),
-					   anal->isValid(),
-					   "",
-					   fed_key.fedId(),
-					   fed_key.feUnit(),
-					   fed_key.feChan(),
-					   fed_key.fedApv()
-					   );
-    
+    PedsFullNoiseAnalysisDescription* tmp = NULL;
+    tmp = new PedsFullNoiseAnalysisDescription(
+					       //// Bad flags for the analysis summary
+					       anal->deadStrip()[iapv], // dead strip-id within an APV
+					       anal->badStrip()[iapv],  // bad strip-id within an APV
+					       anal->shiftedStrip()[iapv], // bad strip-id within an APV due to offset
+					       anal->lowNoiseStrip()[iapv], // bad strip-id within an APV due to noise
+					       anal->largeNoiseStrip()[iapv], // bad strip-id within an APV due to noise
+					       anal->largeNoiseSignificance()[iapv], // bad strip-id within an APV due to noise significance
+					       anal->badFitStatus()[iapv], // bad strip-id within an APV due to fit status
+					       anal->badADProbab()[iapv], // bad strip-id within an APV due to AD probab
+					       anal->badKSProbab()[iapv], // bad strip-id within an APV due to KS probab 
+					       anal->badJBProbab()[iapv], // bad strip-id within an APV due to JB probab 
+					       anal->badChi2Probab()[iapv], // bad strip-id within an APV due to Chi2 probab 
+					       anal->badTailStrip()[iapv], // bad strip-id within an APV due to tail
+					       anal->badDoublePeakStrip()[iapv], // bad strip-id within an APV due to Double peaks					   
+					       ///// Per APV quantities
+					       anal->pedsMean()[iapv], // mean peds per APV
+					       anal->pedsSpread()[iapv], // spread peds per APV
+					       anal->noiseMean()[iapv],
+					       anal->noiseSpread()[iapv],
+					       anal->rawMean()[iapv],
+					       anal->rawSpread()[iapv],
+					       anal->pedsMax()[iapv], 
+					       anal->pedsMin()[iapv], 
+					       anal->noiseMax()[iapv],
+					       anal->noiseMin()[iapv],
+					       anal->rawMax()[iapv],
+					       anal->rawMin()[iapv],
+					       ///// --> test statistic values
+					       anal->adProbab()[iapv], // one value oer strip
+					       anal->ksProbab()[iapv], // one value oer strip 
+					       anal->jbProbab()[iapv], // one value oer strip 
+					       anal->chi2Probab()[iapv], // one value oer strip 
+					       //// --> Per strip quantities
+					       anal->residualRMS()[iapv],
+					       anal->residualSigmaGaus()[iapv],
+					       anal->noiseSignificance()[iapv],
+					       anal->residualSkewness()[iapv],
+					       anal->residualKurtosis()[iapv],
+					       anal->residualIntegralNsigma()[iapv],
+					       anal->residualIntegral()[iapv],
+					       ///// coordinates
+					       fec_key.fecCrate(),
+					       fec_key.fecSlot(),
+					       fec_key.fecRing(),
+					       fec_key.ccuAddr(),
+					       fec_key.ccuChan(),
+					       SiStripFecKey::i2cAddr( fec_key.lldChan(), !iapv ), 
+					       db()->dbParams().partitions().begin()->second.partitionName(),
+					       db()->dbParams().partitions().begin()->second.runNumber(),
+					       anal->isValid(),
+					       "",
+					       fed_key.fedId(),
+					       fed_key.feUnit(),
+					       fed_key.feChan(),
+					       fed_key.fedApv()
+					       );
     
     // Add comments
     typedef std::vector<std::string> Strings;
