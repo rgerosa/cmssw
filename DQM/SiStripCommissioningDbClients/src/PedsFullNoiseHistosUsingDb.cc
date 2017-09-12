@@ -305,7 +305,7 @@ void PedsFullNoiseHistosUsingDb::create( SiStripConfigDb::AnalysisDescriptionsV&
   for ( uint16_t iapv = 0; iapv < 2; ++iapv ) {
     // Create description
     PedestalsAnalysisDescription* tmp = NULL;
-    /*
+  
     tmp = new PedestalsAnalysisDescription(
 					   //// Bad flags for the analysis summary
 					   anal->deadStrip()[iapv],
@@ -365,7 +365,7 @@ void PedsFullNoiseHistosUsingDb::create( SiStripConfigDb::AnalysisDescriptionsV&
 					   fed_key.fedApv()
 					   );
     
-    */
+    
     // Add comments
     typedef std::vector<std::string> Strings;
     Strings errors = anal->getErrorCodes();
