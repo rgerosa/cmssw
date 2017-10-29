@@ -1,4 +1,3 @@
-
 #include "DQM/SiStripCommissioningDbClients/interface/CommissioningHistosUsingDb.h"
 #include "CalibFormats/SiStripObjects/interface/NumberOfDevices.h"
 #include "CalibFormats/SiStripObjects/interface/SiStripFecCabling.h"
@@ -83,7 +82,7 @@ CommissioningHistosUsingDb::~CommissioningHistosUsingDb() {
 // -----------------------------------------------------------------------------
 /** */
 void CommissioningHistosUsingDb::uploadToConfigDb() {
-  buildDetInfo();
+  buildDetInfo(); // build a detector map from the database --> DCU connected
   addDcuDetIds(); 
   uploadConfigurations();
   uploadAnalyses(); 
@@ -91,7 +90,7 @@ void CommissioningHistosUsingDb::uploadToConfigDb() {
 
 // -----------------------------------------------------------------------------
 /** */
-void CommissioningHistosUsingDb::uploadAnalyses() {
+void CommissioningHistosUsingDb::uploadAnalyses() { // to store analysis results in the DB
 
   if ( !db_ ) {
     edm::LogError(mlDqmClient_) 
@@ -104,7 +103,8 @@ void CommissioningHistosUsingDb::uploadAnalyses() {
   db_->clearAnalysisDescriptions();
   SiStripDbParams::SiStripPartitions::const_iterator ip = db_->dbParams().partitions().begin();
   SiStripDbParams::SiStripPartitions::const_iterator jp = db_->dbParams().partitions().end();
-  for ( ; ip != jp; ++ip ) {
+
+  for ( ; ip != jp; ++ip ) {// loop on the partitions
 
     edm::LogVerbatim(mlDqmClient_) 
       << "[CommissioningHistosUsingDb::" << __func__ << "]"
@@ -115,9 +115,10 @@ void CommissioningHistosUsingDb::uploadAnalyses() {
       << "   FEC:  " << ip->second.fecVersion().first  << "." << ip->second.fecVersion().second << "\n"
       << "   Mask: " << ip->second.maskVersion().first << "." << ip->second.maskVersion().second;
 
+    
     // Upload commissioning analysis results 
     SiStripConfigDb::AnalysisDescriptionsV anals;
-    createAnalyses( anals );
+    createAnalyses(anals);
     
     edm::LogVerbatim(mlDqmClient_) 
       << "[CommissioningHistosUsingDb::" << __func__ << "]"
@@ -127,31 +128,33 @@ void CommissioningHistosUsingDb::uploadAnalyses() {
     // Update analysis descriptions with new commissioning results
     if ( uploadAnal_ ) {
       if ( uploadConf_ ) { 
-				edm::LogVerbatim(mlDqmClient_)
-	  		<< "[CommissioningHistosUsingDb::" << __func__ << "]"
-	  		<< " Uploading major version of analysis descriptions to DB"
-	  		<< " (will be used for physics)...";
+	edm::LogVerbatim(mlDqmClient_)
+	  << "[CommissioningHistosUsingDb::" << __func__ << "]"
+	  << " Uploading major version of analysis descriptions to DB"
+	  << " (will be used for physics)...";
       } 
       else {
-				edm::LogVerbatim(mlDqmClient_)
-	 			<< "[CommissioningHistosUsingDb::" << __func__ << "]"
-	  		<< " Uploading minor version of analysis descriptions to DB"
-	  		<< " (will not be used for physics)...";
+	edm::LogVerbatim(mlDqmClient_)
+	  << "[CommissioningHistosUsingDb::" << __func__ << "]"
+	  << " Uploading minor version of analysis descriptions to DB"
+	  << " (will not be used for physics)...";
       }
-      db_->clearAnalysisDescriptions( ip->second.partitionName() );
-      db_->addAnalysisDescriptions( ip->second.partitionName(), anals ); 
-      db_->uploadAnalysisDescriptions( uploadConf_, ip->second.partitionName() ); 
+
+      //db_->clearAnalysisDescriptions(ip->second.partitionName()); // store the analysis in the DB
+      //db_->addAnalysisDescriptions( ip->second.partitionName(), anals );  // add Analysis description
+      //db_->uploadAnalysisDescriptions( uploadConf_, ip->second.partitionName() );  // uploadAnalysisDescription
+      
       edm::LogVerbatim(mlDqmClient_) 
-			<< "[CommissioningHistosUsingDb::" << __func__ << "]"
-      << " Upload of analysis descriptions to DB finished!";
+	<< "[CommissioningHistosUsingDb::" << __func__ << "]"
+	<< " Upload of analysis descriptions to DB finished!";
     } 
     else {
       edm::LogWarning(mlDqmClient_) 
         << "[CommissioningHistosUsingDb::" << __func__ << "]"
         << " TEST! No analysis descriptions will be uploaded to DB...";
     }
-
-    if ( uploadConf_ ) {
+    
+    if ( uploadConf_ ) { // just upload to CONFDB
       SiStripDbParams::SiStripPartitions::const_iterator ip = db_->dbParams().partitions().begin();
       SiStripDbParams::SiStripPartitions::const_iterator jp = db_->dbParams().partitions().end();
       for ( ; ip != jp; ++ip ) {
@@ -175,10 +178,8 @@ void CommissioningHistosUsingDb::uploadAnalyses() {
             << "   Mask: " << (*istate)->getMaskVersionMajorId() << "." << (*istate)->getMaskVersionMinorId();
         }
       }
-    }
-
-  }
-  
+    } 
+  }  
 }
 
 // -----------------------------------------------------------------------------
@@ -194,7 +195,7 @@ void CommissioningHistosUsingDb::addDcuDetIds() {
   
   Analyses::iterator ianal = data().begin();
   Analyses::iterator janal = data().end();
-  for ( ; ianal != janal; ++ianal ) { 
+  for ( ; ianal != janal; ++ianal ) {  // loop over analysis objects --> one per APV or APV pair
 
     CommissioningAnalysis* anal = ianal->second;
   
@@ -209,7 +210,7 @@ void CommissioningHistosUsingDb::addDcuDetIds() {
     SiStripFecKey fec_key = anal->fecKey();
     
     FedChannelConnection conn = cabling_->fedConnection( fed_key.fedId(),
-                                                         fed_key.fedChannel() );
+                                                         fed_key.fedChannel() ); // find the connections for the given FEC and FED key
   
     SiStripFedKey fed( conn.fedId(),
 		       SiStripFedKey::feUnit( conn.fedCh() ),
@@ -244,7 +245,7 @@ void CommissioningHistosUsingDb::addDcuDetIds() {
 	 << " FEC key from cabling object  : " << fec.path();
       edm::LogWarning(mlDqmClient_) << ss.str();
 
-    } else {
+    } else { // set dcu and det ID for the object
 
       anal->dcuId( conn.dcuId() );
       anal->detId( conn.detId() );
@@ -264,34 +265,13 @@ void CommissioningHistosUsingDb::createAnalyses( SiStripConfigDb::AnalysisDescri
     << " Creating AnalysisDescriptions...";
 
   desc.clear();
-  
-//   uint16_t size = 0;
-//   std::stringstream ss;
-//   ss << "[CommissioningHistosUsingDb::" << __func__ << "]"
-//      << " Analysis descriptions:" << std::endl;
 
   Analyses::iterator ianal = data().begin();
   Analyses::iterator janal = data().end();
-  for ( ; ianal != janal; ++ianal ) { 
 
-    // create analysis description
-    create( desc, ianal ); 
-    
-//     // debug
-//     if ( ianal->second ) {
-//       if ( desc.size()/2 > size ) { // print every 2nd description
-// 	size = desc.size()/2;
-// 	ianal->second->print(ss); 
-// 	ss << (*(desc.end()-2))->toString();
-// 	ss << (*(desc.end()-1))->toString();
-// 	ss << std::endl;
-//       }
-//     }
-
+  for ( ; ianal != janal; ++ianal ) {  // Loop on each Analysis Entry --> per APV
+    create( desc, ianal ); // create analysis description
   }
-
-//   LogTrace(mlDqmClient_) << ss.str(); 
-  
 }
 
 // -----------------------------------------------------------------------------
@@ -309,11 +289,12 @@ void CommissioningHistosUsingDb::buildDetInfo() {
 
   SiStripDbParams::SiStripPartitions::const_iterator ii = db_->dbParams().partitions().begin();
   SiStripDbParams::SiStripPartitions::const_iterator jj = db_->dbParams().partitions().end();
-  for ( ; ii != jj; ++ii ) {
+
+  for ( ; ii != jj; ++ii ) { // Loop on the partitions
     
     // Retrieve DCUs and DetIds for given partition
     std::string pp = ii->second.partitionName();
-    SiStripConfigDb::DeviceDescriptionsRange dcus = db()->getDeviceDescriptions( DCU, pp ); 
+    SiStripConfigDb::DeviceDescriptionsRange dcus = db()->getDeviceDescriptions( DCU, pp ); // take the info
     SiStripConfigDb::DcuDetIdsRange dets = db()->getDcuDetIds( pp ); 
     
     // Iterate through DCUs

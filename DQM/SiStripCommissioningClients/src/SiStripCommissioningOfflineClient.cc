@@ -341,10 +341,10 @@ void SiStripCommissioningOfflineClient::beginRun( const edm::Run& run, const edm
 	<< " Client file not saved!";
     }
   }
-  /*
+  
   // Virtual method to trigger the database upload
   uploadToConfigDb();
-  */
+  
   
   // Print analyses
   if ( histos_ ) { 

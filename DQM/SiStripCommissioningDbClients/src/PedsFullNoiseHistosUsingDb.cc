@@ -97,6 +97,7 @@ void PedsFullNoiseHistosUsingDb::update( SiStripConfigDb::FedDescriptionsRange f
  
   // Iterate through feds and update fed descriptions
   uint16_t updated = 0;
+  long int nstrips = 0;
   SiStripConfigDb::FedDescriptionsV::const_iterator ifed;
 
   for ( ifed = feds.begin(); ifed != feds.end(); ifed++ ) { // Loop on the FED for this partition
@@ -150,6 +151,7 @@ void PedsFullNoiseHistosUsingDb::update( SiStripConfigDb::FedDescriptionsRange f
         for ( uint16_t iapv = 0; iapv < sistrip::APVS_PER_FEDCH; iapv++ ) {
           for ( uint16_t istr = 0; istr < anal->peds()[iapv].size(); istr++ ) { // Loop on the pedestal for each APV
 
+	    nstrips++;
             // get the information on the strip as it was on the db
             Fed9U::Fed9UAddress addr( ichan, iapv, istr );
             Fed9U::Fed9UStripDescription temp = (*ifed)->getFedStrips().getStrip( addr );
@@ -166,7 +168,7 @@ void PedsFullNoiseHistosUsingDb::update( SiStripConfigDb::FedDescriptionsRange f
 			<<" "<<conn.ccuChan()
 			<<" "<<conn.lldChannel()
 			<<" "<<iapv*128+istr<<std::endl;
-
+	      std::cout<<ss_disable.str()<<std::endl;
 	      if(keepStripsDisabled_) disableStrip = true; // in case one wants to keep them disabled
             }
 	    else{
@@ -179,13 +181,14 @@ void PedsFullNoiseHistosUsingDb::update( SiStripConfigDb::FedDescriptionsRange f
               	if (not skipEmptyStrips_ and  // if one don't want to skip dead strips
 		    find( dead.begin(), dead.end(), istr ) != dead.end() ) {
 		  disableStrip = true;
-                  ss_disable<<"Disabling Dead Strip: "<<conn.fecCrate()
+                  ss_disable<<"Disabling Dead Strip: "<<conn.fecCrate()		    
 			    <<" "<<conn.fecSlot()
 			    <<" "<<conn.fecRing()
 			    <<" "<<conn.ccuAddr()
 			    <<" "<<conn.ccuChan()
 			    <<" "<<conn.lldChannel()
 			    <<" "<<iapv*128+istr<<std::endl;
+		  std::cout<<ss_disable.str()<<std::endl;
                 }
 		
               	PedsFullNoiseAnalysis::VInt badcChan = anal->badStrip()[iapv]; // new feature --> this is the sample of the whole bad strips from the analysis
@@ -199,6 +202,7 @@ void PedsFullNoiseHistosUsingDb::update( SiStripConfigDb::FedDescriptionsRange f
 			      <<" "<<conn.ccuChan()
 			      <<" "<<conn.lldChannel()
 			      <<" "<<iapv*128+istr<<std::endl;
+		  std::cout<<ss_disable.str()<<std::endl;
 		  }
 		}
               }
@@ -206,7 +210,7 @@ void PedsFullNoiseHistosUsingDb::update( SiStripConfigDb::FedDescriptionsRange f
 
 	    if(edm::isDebugEnabled())
 	      LogTrace(mlDqmClient_) << ss_disable.str();
-	    
+
 	    uint32_t pedestalVal = 0;
 	    uint32_t noiseVal = 0;
 	    uint32_t lowThr   = 0;
@@ -267,7 +271,6 @@ void PedsFullNoiseHistosUsingDb::update( SiStripConfigDb::FedDescriptionsRange f
         } // end loop on apvs
         updated++;
       }
-
       else { // device not found in the analysis	
         if ( deviceIsPresent(fec_key) ) {
           edm::LogWarning(mlDqmClient_) 
@@ -292,6 +295,7 @@ void PedsFullNoiseHistosUsingDb::update( SiStripConfigDb::FedDescriptionsRange f
     << "[PedsFullNoiseHistosUsingDb::" << __func__ << "]"
     << " Updated FED pedestals/noise for " 
     << updated << " channels";
+
 }
 
 // -----------------------------------------------------------------------------
@@ -300,81 +304,82 @@ void PedsFullNoiseHistosUsingDb::create( SiStripConfigDb::AnalysisDescriptionsV&
                                          Analysis analysis ) {
 
   PedsFullNoiseAnalysis* anal = dynamic_cast<PedsFullNoiseAnalysis*>( analysis->second );
+
   if ( !anal ) { return; }
   
   SiStripFecKey fec_key( anal->fecKey() );
   SiStripFedKey fed_key( anal->fedKey() );
   
   for ( uint16_t iapv = 0; iapv < 2; ++iapv ) {
-    // Create description
-    PedsFullNoiseAnalysisDescription* tmp = NULL;
-    tmp = new PedsFullNoiseAnalysisDescription(
-					       //// Bad flags for the analysis summary
-					       anal->deadStrip()[iapv], // dead strip-id within an APV
-					       anal->badStrip()[iapv],  // bad strip-id within an APV
-					       anal->shiftedStrip()[iapv], // bad strip-id within an APV due to offset
-					       anal->lowNoiseStrip()[iapv], // bad strip-id within an APV due to noise
-					       anal->largeNoiseStrip()[iapv], // bad strip-id within an APV due to noise
-					       anal->largeNoiseSignificance()[iapv], // bad strip-id within an APV due to noise significance
-					       anal->badFitStatus()[iapv], // bad strip-id within an APV due to fit status
-					       anal->badADProbab()[iapv], // bad strip-id within an APV due to AD probab
-					       anal->badKSProbab()[iapv], // bad strip-id within an APV due to KS probab 
-					       anal->badJBProbab()[iapv], // bad strip-id within an APV due to JB probab 
-					       anal->badChi2Probab()[iapv], // bad strip-id within an APV due to Chi2 probab 
-					       anal->badTailStrip()[iapv], // bad strip-id within an APV due to tail
-					       anal->badDoublePeakStrip()[iapv], // bad strip-id within an APV due to Double peaks					   
-					       ///// Per APV quantities
-					       anal->pedsMean()[iapv], // mean peds per APV
-					       anal->pedsSpread()[iapv], // spread peds per APV
-					       anal->noiseMean()[iapv],
-					       anal->noiseSpread()[iapv],
-					       anal->rawMean()[iapv],
-					       anal->rawSpread()[iapv],
-					       anal->pedsMax()[iapv], 
-					       anal->pedsMin()[iapv], 
-					       anal->noiseMax()[iapv],
-					       anal->noiseMin()[iapv],
-					       anal->rawMax()[iapv],
-					       anal->rawMin()[iapv],
-					       ///// --> test statistic values
-					       anal->adProbab()[iapv], // one value oer strip
-					       anal->ksProbab()[iapv], // one value oer strip 
-					       anal->jbProbab()[iapv], // one value oer strip 
-					       anal->chi2Probab()[iapv], // one value oer strip 
-					       //// --> Per strip quantities
-					       anal->residualRMS()[iapv],
-					       anal->residualSigmaGaus()[iapv],
-					       anal->noiseSignificance()[iapv],
-					       anal->residualSkewness()[iapv],
-					       anal->residualKurtosis()[iapv],
-					       anal->residualIntegralNsigma()[iapv],
-					       anal->residualIntegral()[iapv],
-					       ///// coordinates
-					       fec_key.fecCrate(),
-					       fec_key.fecSlot(),
-					       fec_key.fecRing(),
-					       fec_key.ccuAddr(),
-					       fec_key.ccuChan(),
-					       SiStripFecKey::i2cAddr( fec_key.lldChan(), !iapv ), 
-					       db()->dbParams().partitions().begin()->second.partitionName(),
-					       db()->dbParams().partitions().begin()->second.runNumber(),
-					       anal->isValid(),
-					       "",
-					       fed_key.fedId(),
-					       fed_key.feUnit(),
-					       fed_key.feChan(),
-					       fed_key.fedApv()
-					       );
-    
-    // Add comments
+  
+    // Create description                                                                                                                                                                              
+    PedsFullNoiseAnalysisDescription* pedestalDescription;
+    pedestalDescription = new PedsFullNoiseAnalysisDescription(
+							   anal->deadStrip()[iapv],
+							   anal->badStrip()[iapv],
+							   anal->shiftedStrip()[iapv], // bad strip-id within an APV due to offset
+							   anal->lowNoiseStrip()[iapv], // bad strip-id within an APV due to noise
+							   anal->largeNoiseStrip()[iapv], // bad strip-id within an APV due to noise
+							   anal->largeNoiseSignificance()[iapv], // bad strip-id within an APV due to noise significance
+							   anal->badFitStatus()[iapv], // bad strip-id within an APV due to fit status
+							   anal->badADProbab()[iapv], // bad strip-id within an APV due to AD probab
+							   anal->badKSProbab()[iapv], // bad strip-id within an APV due to KS probab 
+							   anal->badJBProbab()[iapv], // bad strip-id within an APV due to JB probab 
+							   anal->badChi2Probab()[iapv], // bad strip-id within an APV due to Chi2 probab 
+							   anal->badTailStrip()[iapv], // bad strip-id within an APV due to tail
+							   anal->badDoublePeakStrip()[iapv], // bad strip-id within an APV due to Double peaks					   
+							   //////
+							   anal->pedsMean()[iapv],
+							   anal->pedsSpread()[iapv],
+							   anal->noiseMean()[iapv],
+							   anal->noiseSpread()[iapv],
+							   anal->rawMean()[iapv],
+							   anal->rawSpread()[iapv],
+							   anal->pedsMax()[iapv],
+							   anal->pedsMin()[iapv],
+							   anal->noiseMax()[iapv],
+							   anal->noiseMin()[iapv],
+							   anal->rawMax()[iapv],
+							   anal->rawMin()[iapv],
+							   //////
+							   anal->adProbab()[iapv], // one value oer strip
+							   anal->ksProbab()[iapv], // one value oer strip 
+							   anal->jbProbab()[iapv], // one value oer strip 
+							   anal->chi2Probab()[iapv], // one value oer strip 
+							   //// --> Per strip quantities
+							   anal->residualRMS()[iapv],
+							   anal->residualSigmaGaus()[iapv],
+							   anal->noiseSignificance()[iapv],
+							   anal->residualSkewness()[iapv],
+							   anal->residualKurtosis()[iapv],
+							   anal->residualIntegralNsigma()[iapv],
+							   anal->residualIntegral()[iapv],
+							   ////
+							   fec_key.fecCrate(),
+							   fec_key.fecSlot(),
+							   fec_key.fecRing(),
+							   fec_key.ccuAddr(),
+							   fec_key.ccuChan(),
+							   SiStripFecKey::i2cAddr( fec_key.lldChan(), !iapv ),
+							   db()->dbParams().partitions().begin()->second.partitionName(),
+							   db()->dbParams().partitions().begin()->second.runNumber(),
+							   anal->isValid(),
+							   "",
+							   fed_key.fedId(),
+							   fed_key.feUnit(),
+							   fed_key.feChan(),
+							   fed_key.fedApv()
+							   );
     typedef std::vector<std::string> Strings;
     Strings errors = anal->getErrorCodes();
     Strings::const_iterator istr = errors.begin();
     Strings::const_iterator jstr = errors.end();
-    for ( ; istr != jstr; ++istr ) { tmp->addComments( *istr ); }
+    for ( ; istr != jstr; ++istr ) { 
+      pedestalDescription->addComments( *istr );
+    }
     // Store description
-    desc.push_back( tmp );      
+    desc.push_back(pedestalDescription);      
+   
   }
-
 }
 
