@@ -72,6 +72,11 @@ SiStripConfigDb::AnalysisDescriptionsRange SiStripConfigDb::getAnalysisDescripti
 								  iter->second.pedestalsVersion().first,
 								  iter->second.pedestalsVersion().second,
 								  analysis_type );
+	    } else if ( analysis_type == AnalysisDescription::T_ANALYSIS_PEDSFULLNOISE ) { 
+	      tmp1 = deviceFactory(__func__)->getAnalysisHistory( iter->second.partitionName(), 
+								  iter->second.pedestalsVersion().first,
+								  iter->second.pedestalsVersion().second,
+								  analysis_type );
 	    } else if ( analysis_type == AnalysisDescription::T_ANALYSIS_APVLATENCY ) {
 	      tmp1 = deviceFactory(__func__)->getAnalysisHistory( iter->second.partitionName(), 
 								  iter->second.apvLatencyVersion().first,
@@ -275,15 +280,17 @@ void SiStripConfigDb::uploadAnalysisDescriptions( bool calibration_for_physics,
 	      << " Analysis type is UNKNOWN. Aborting upload!";
 	    return;
 	  }
+
+	  std::cout<<"calibration_for_physics "<<calibration_for_physics<<std::endl;
 	  
 	  uint32_t version = deviceFactory(__func__)->uploadAnalysis( iter->second.runNumber(), 
 								      iter->second.partitionName(), 
 								      analysis_type,
 								      anals,
 								      calibration_for_physics );
-
+	  
 	  // Update current state with analysis descriptions
-	  if ( calibration_for_physics ) { deviceFactory(__func__)->uploadAnalysisState( version ); }
+	  //if ( calibration_for_physics ) { deviceFactory(__func__)->uploadAnalysisState( version ); }
 	  
 	  // Some debug
 	  std::stringstream ss;
@@ -514,6 +521,7 @@ std::string SiStripConfigDb::analysisType( AnalysisType analysis_type ) const {
   else if ( analysis_type == AnalysisDescription::T_ANALYSIS_TIMING )         { return "APV_TIMING"; }
   else if ( analysis_type == AnalysisDescription::T_ANALYSIS_OPTOSCAN )       { return "OPTO_SCAN"; }
   else if ( analysis_type == AnalysisDescription::T_ANALYSIS_PEDESTALS )      { return "PEDESTALS"; }
+  else if ( analysis_type == AnalysisDescription::T_ANALYSIS_PEDSFULLNOISE )  { return "PEDSFULLNOISE"; }
   else if ( analysis_type == AnalysisDescription::T_ANALYSIS_APVLATENCY )     { return "APV_LATENCY"; }
   else if ( analysis_type == AnalysisDescription::T_ANALYSIS_FINEDELAY )      { return "FINE_DELAY"; }
   else if ( analysis_type == AnalysisDescription::T_ANALYSIS_CALIBRATION )    { return "CALIBRATION"; }

@@ -168,7 +168,6 @@ void PedsFullNoiseHistosUsingDb::update( SiStripConfigDb::FedDescriptionsRange f
 			<<" "<<conn.ccuChan()
 			<<" "<<conn.lldChannel()
 			<<" "<<iapv*128+istr<<std::endl;
-	      std::cout<<ss_disable.str()<<std::endl;
 	      if(keepStripsDisabled_) disableStrip = true; // in case one wants to keep them disabled
             }
 	    else{
@@ -188,7 +187,6 @@ void PedsFullNoiseHistosUsingDb::update( SiStripConfigDb::FedDescriptionsRange f
 			    <<" "<<conn.ccuChan()
 			    <<" "<<conn.lldChannel()
 			    <<" "<<iapv*128+istr<<std::endl;
-		  std::cout<<ss_disable.str()<<std::endl;
                 }
 		
               	PedsFullNoiseAnalysis::VInt badcChan = anal->badStrip()[iapv]; // new feature --> this is the sample of the whole bad strips from the analysis
@@ -202,7 +200,6 @@ void PedsFullNoiseHistosUsingDb::update( SiStripConfigDb::FedDescriptionsRange f
 			      <<" "<<conn.ccuChan()
 			      <<" "<<conn.lldChannel()
 			      <<" "<<iapv*128+istr<<std::endl;
-		  std::cout<<ss_disable.str()<<std::endl;
 		  }
 		}
               }

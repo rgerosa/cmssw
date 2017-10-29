@@ -140,9 +140,9 @@ void CommissioningHistosUsingDb::uploadAnalyses() { // to store analysis results
 	  << " (will not be used for physics)...";
       }
 
-      //db_->clearAnalysisDescriptions(ip->second.partitionName()); // store the analysis in the DB
-      //db_->addAnalysisDescriptions( ip->second.partitionName(), anals );  // add Analysis description
-      //db_->uploadAnalysisDescriptions( uploadConf_, ip->second.partitionName() );  // uploadAnalysisDescription
+      db_->clearAnalysisDescriptions(ip->second.partitionName()); // store the analysis in the DB
+      db_->addAnalysisDescriptions( ip->second.partitionName(), anals );  // add Analysis description
+      db_->uploadAnalysisDescriptions( uploadConf_, ip->second.partitionName() );  // uploadAnalysisDescription
       
       edm::LogVerbatim(mlDqmClient_) 
 	<< "[CommissioningHistosUsingDb::" << __func__ << "]"
