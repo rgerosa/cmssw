@@ -11,6 +11,7 @@ hltTrackValidator = hltMultiTrackValidator.clone(
         "hltIter1Merged",
         "hltIter2PFlowTrackSelectionHighPurity",
         "hltIter2Merged",
+        "hltMergedTracks",
 #        "hltIter3PFlowTrackSelectionHighPurity",
 #        "hltIter3Merged",
 #        "hltIter4PFlowTrackSelectionHighPurity",
