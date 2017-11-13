@@ -357,7 +357,7 @@ void SiStripPartition::update( const SiStripConfigDb* const db ) {
 	  maskVersion_.second = (*istate)->getMaskVersionMinorId(); 
 	}
 	//#endif
-	
+
 	// Retrieve global and local versions 
 	if ( forceCurrentState_ || globalAnalysisV_ ) { // use global version (or current state)
 
@@ -499,7 +499,7 @@ void SiStripPartition::update( const SiStripConfigDb* const db ) {
       TkRun* run = 0;
       if ( !runNumber_ ) { run = df->getLastRun( partitionName_ ); }
       else { run = df->getRun( partitionName_, runNumber_ ); }
-  
+
       // Retrieve versioning for given TkRun object 
       if ( run ) {
 	

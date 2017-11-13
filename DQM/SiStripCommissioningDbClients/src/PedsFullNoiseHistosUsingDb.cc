@@ -308,10 +308,53 @@ void PedsFullNoiseHistosUsingDb::create( SiStripConfigDb::AnalysisDescriptionsV&
   SiStripFedKey fed_key( anal->fedKey() );
   
   for ( uint16_t iapv = 0; iapv < 2; ++iapv ) {
-  
-    // Create description                                                                                                                                                                              
-    PedsFullNoiseAnalysisDescription* pedestalDescription;
-    pedestalDescription = new PedsFullNoiseAnalysisDescription(
+
+    // Create a description for the standard pedestal analysis                                                                                                                           
+    PedestalsAnalysisDescription* pedestalDescription;
+    pedestalDescription = new PedestalsAnalysisDescription(
+					   anal->deadStrip()[iapv],
+					   anal->badStrip()[iapv],
+					   anal->pedsMean()[iapv],
+					   anal->pedsSpread()[iapv],
+					   anal->noiseMean()[iapv],
+					   anal->noiseSpread()[iapv],
+					   anal->rawMean()[iapv],
+					   anal->rawSpread()[iapv],
+					   anal->pedsMax()[iapv],
+					   anal->pedsMin()[iapv],
+					   anal->noiseMax()[iapv],
+					   anal->noiseMin()[iapv],
+					   anal->rawMax()[iapv],
+					   anal->rawMin()[iapv],
+					   fec_key.fecCrate(),
+					   fec_key.fecSlot(),
+					   fec_key.fecRing(),
+					   fec_key.ccuAddr(),
+					   fec_key.ccuChan(),
+					   SiStripFecKey::i2cAddr( fec_key.lldChan(), !iapv ),
+					   db()->dbParams().partitions().begin()->second.partitionName(),
+					   db()->dbParams().partitions().begin()->second.runNumber(),
+					   anal->isValid(),
+					   "",
+					   fed_key.fedId(),
+					   fed_key.feUnit(),
+					   fed_key.feChan(),
+					   fed_key.fedApv()
+					   );
+
+    // Add comments                                                                                                                                                                                   
+    typedef std::vector<std::string> Strings;
+    Strings errors = anal->getErrorCodes();
+    Strings::const_iterator istr = errors.begin();
+    Strings::const_iterator jstr = errors.end();
+    for ( ; istr != jstr; ++istr ) {pedestalDescription->addComments( *istr ); }
+
+    // Store description                                                                                                                                                                              
+    desc.push_back(pedestalDescription);
+
+    // Create description                                                                                                                                                                             
+    PedsFullNoiseAnalysisDescription* pedsFullNoiseDescription;
+    pedsFullNoiseDescription = new PedsFullNoiseAnalysisDescription(
 							   anal->deadStrip()[iapv],
 							   anal->badStrip()[iapv],
 							   anal->shiftedStrip()[iapv], // bad strip-id within an APV due to offset
@@ -325,19 +368,6 @@ void PedsFullNoiseHistosUsingDb::create( SiStripConfigDb::AnalysisDescriptionsV&
 							   anal->badChi2Probab()[iapv], // bad strip-id within an APV due to Chi2 probab 
 							   anal->badTailStrip()[iapv], // bad strip-id within an APV due to tail
 							   anal->badDoublePeakStrip()[iapv], // bad strip-id within an APV due to Double peaks					   
-							   //////
-							   anal->pedsMean()[iapv],
-							   anal->pedsSpread()[iapv],
-							   anal->noiseMean()[iapv],
-							   anal->noiseSpread()[iapv],
-							   anal->rawMean()[iapv],
-							   anal->rawSpread()[iapv],
-							   anal->pedsMax()[iapv],
-							   anal->pedsMin()[iapv],
-							   anal->noiseMax()[iapv],
-							   anal->noiseMin()[iapv],
-							   anal->rawMax()[iapv],
-							   anal->rawMin()[iapv],
 							   //////
 							   anal->adProbab()[iapv], // one value oer strip
 							   anal->ksProbab()[iapv], // one value oer strip 
@@ -367,16 +397,15 @@ void PedsFullNoiseHistosUsingDb::create( SiStripConfigDb::AnalysisDescriptionsV&
 							   fed_key.feChan(),
 							   fed_key.fedApv()
 							   );
-    typedef std::vector<std::string> Strings;
-    Strings errors = anal->getErrorCodes();
-    Strings::const_iterator istr = errors.begin();
-    Strings::const_iterator jstr = errors.end();
+    istr = errors.begin();
+    jstr = errors.end();
     for ( ; istr != jstr; ++istr ) { 
-      pedestalDescription->addComments( *istr );
+      pedsFullNoiseDescription->addComments( *istr );
     }
+
     // Store description
-    desc.push_back(pedestalDescription);      
-   
+    desc.push_back(pedsFullNoiseDescription);      
+
   }
 }
 
