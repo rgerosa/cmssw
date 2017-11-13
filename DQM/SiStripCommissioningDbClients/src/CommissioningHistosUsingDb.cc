@@ -140,9 +140,7 @@ void CommissioningHistosUsingDb::uploadAnalyses() { // to store analysis results
 	  << " (will not be used for physics)...";
       }
 
-      std::cout<<"clear analysis description "<<ip->second.partitionName()<<std::endl;
       db_->clearAnalysisDescriptions(ip->second.partitionName()); // store the analysis in the DB
-      std::cout<<"addAnalysisDescriptions "<<ip->second.partitionName()<<std::endl;
       db_->addAnalysisDescriptions( ip->second.partitionName(), anals );  // add Analysis description
       db_->uploadAnalysisDescriptions( uploadConf_, ip->second.partitionName() );  // uploadAnalysisDescription
       
