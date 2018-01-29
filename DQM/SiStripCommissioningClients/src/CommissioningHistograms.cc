@@ -24,6 +24,7 @@ CommissioningHistograms::CommissioningHistograms( const edm::ParameterSet& pset,
     histos_(),
     pset_(pset)
 {
+
   LogTrace(mlDqmClient_)
     << "[" << __PRETTY_FUNCTION__ << "]"
     << " Constructing object...";
@@ -573,6 +574,7 @@ void CommissioningHistograms::createSummaryHisto( const sistrip::Monitorable& mo
 						  const sistrip::Presentation& pres, 
 						  const std::string& dir,
 						  const sistrip::Granularity& gran ) {
+
   LogTrace(mlDqmClient_)
     << "[CommissioningHistograms::" << __func__ << "]";
   
@@ -591,7 +593,7 @@ void CommissioningHistograms::createSummaryHisto( const sistrip::Monitorable& mo
     return;
   }
   
-  // Extract data to be histogrammed
+  // Extract data to be histogrammed  
   uint32_t xbins = factory()->init( mon, pres, view, dir, gran, data() );
   
   // Only create histograms if entries are found!

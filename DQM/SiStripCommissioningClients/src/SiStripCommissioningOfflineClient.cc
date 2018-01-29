@@ -9,6 +9,7 @@
 #include "DQM/SiStripCommissioningClients/interface/OptoScanHistograms.h"
 #include "DQM/SiStripCommissioningClients/interface/VpspScanHistograms.h"
 #include "DQM/SiStripCommissioningClients/interface/PedestalsHistograms.h"
+#include "DQM/SiStripCommissioningClients/interface/PedsFullNoiseHistograms.h"
 #include "DQM/SiStripCommissioningClients/interface/PedsOnlyHistograms.h"
 #include "DQM/SiStripCommissioningClients/interface/NoiseHistograms.h"
 #include "DQM/SiStripCommissioningClients/interface/SamplingHistograms.h"
@@ -25,7 +26,7 @@
 #include <sstream>
 #include <sys/types.h>
 #include <dirent.h>
-#include <cerrno>
+#include <errno.h>
 #include "TProfile.h"
 
 using namespace sistrip;
@@ -49,6 +50,7 @@ SiStripCommissioningOfflineClient::SiStripCommissioningOfflineClient( const edm:
     plots_(),
     parameters_(pset)
 {
+
   LogTrace(mlDqmClient_)
     << "[SiStripCommissioningOfflineClient::" << __func__ << "]"
     << " Constructing object...";
@@ -69,6 +71,7 @@ SiStripCommissioningOfflineClient::~SiStripCommissioningOfflineClient() {
 // -----------------------------------------------------------------------------
 // 
 void SiStripCommissioningOfflineClient::beginRun( const edm::Run& run, const edm::EventSetup& setup ) {
+
   LogTrace(mlDqmClient_) 
     << "[SiStripCommissioningOfflineClient::" << __func__ << "]"
     << " Analyzing root file(s)...";
@@ -194,7 +197,7 @@ void SiStripCommissioningOfflineClient::beginRun( const edm::Run& run, const edm
     << " directories containing MonitorElements";
   
   // Some more debug
-  if (false) {
+  if (0) {
     std::stringstream ss;
     ss << "[SiStripCommissioningOfflineClient::" << __func__ << "]"
        << " Directories found: " << std::endl;
@@ -205,7 +208,6 @@ void SiStripCommissioningOfflineClient::beginRun( const edm::Run& run, const edm
   
   // Extract run type from contents
   runType_ = CommissioningHistograms::runType( bei_, contents ); 
-  
   // Extract run number from contents
   runNumber_ = CommissioningHistograms::runNumber( bei_, contents ); 
 
@@ -227,7 +229,7 @@ void SiStripCommissioningOfflineClient::beginRun( const edm::Run& run, const edm
       << SiStripEnumsAndStrings::runType( runType_ )
       << " and run number is " << runNumber_;
   }
-  
+
   // Open and parse "summary plot" xml file
   if ( createSummaryPlots_ ) {
     edm::LogVerbatim(mlDqmClient_)
@@ -246,7 +248,7 @@ void SiStripCommissioningOfflineClient::beginRun( const edm::Run& run, const edm
       << " Null string for SummaryPlotXmlFile!"
       << " No summary plots will be created!";
   }
-  
+
   // Some debug
   std::stringstream ss;
   ss << "[SiStripCommissioningOfflineClient::" << __func__ << "]" << std::endl
@@ -268,7 +270,7 @@ void SiStripCommissioningOfflineClient::beginRun( const edm::Run& run, const edm
   if ( xmlFile_.empty() ) { ss << "(none)"; }
   else { ss << "\"" << xmlFile_ << "\""; }
   edm::LogVerbatim(mlDqmClient_) << ss.str();
-
+   
   // Virtual method that creates CommissioningHistogram object
   LogTrace(mlDqmClient_)
     << "[SiStripCommissioningOfflineClient::" << __func__ << "]"
@@ -305,7 +307,7 @@ void SiStripCommissioningOfflineClient::beginRun( const edm::Run& run, const edm
       << "[SiStripCommissioningOfflineClient::" << __func__ << "]"
       << " No histogram analysis performed!";
   }
-  
+
   // Create summary plots
   if ( createSummaryPlots_ ) { 
     edm::LogVerbatim(mlDqmClient_)
@@ -328,7 +330,7 @@ void SiStripCommissioningOfflineClient::beginRun( const edm::Run& run, const edm
       << "[SiStripCommissioningOfflineClient::" << __func__ << "]"
       << " No summary plots generated!";
   }
-  
+
   // Save client root file
   if ( histos_ ) {
     bool save = parameters_.getUntrackedParameter<bool>( "SaveClientFile", true );
@@ -342,6 +344,7 @@ void SiStripCommissioningOfflineClient::beginRun( const edm::Run& run, const edm
   
   // Virtual method to trigger the database upload
   uploadToConfigDb();
+  
   
   // Print analyses
   if ( histos_ ) { 
@@ -401,6 +404,7 @@ void SiStripCommissioningOfflineClient::createHistos( const edm::ParameterSet& p
   else if ( runType_ == sistrip::OPTO_SCAN )            { histos_ = new OptoScanHistograms( pset, bei_ ); }
   else if ( runType_ == sistrip::VPSP_SCAN )            { histos_ = new VpspScanHistograms( pset, bei_ ); }
   else if ( runType_ == sistrip::PEDESTALS )            { histos_ = new PedestalsHistograms( pset, bei_ ); }
+  else if ( runType_ == sistrip::PEDS_FULL_NOISE )      { histos_ = new PedsFullNoiseHistograms( pset, bei_ ); }
   else if ( runType_ == sistrip::PEDS_ONLY )            { histos_ = new PedsOnlyHistograms( pset, bei_ ); }
   else if ( runType_ == sistrip::NOISE )                { histos_ = new NoiseHistograms( pset, bei_ ); }
   else if ( runType_ == sistrip::APV_LATENCY      ||
